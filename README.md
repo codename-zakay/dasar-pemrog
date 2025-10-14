@@ -1,21 +1,12 @@
-# 🚀 Nama Proyek
+# 🚀 Dasar Pemrograman
 
-Deskripsi singkat tentang proyek kamu — apa fungsinya, dan kenapa dibuat.
+Repo ini untuk belajar aja, Mata Kuliah Dasar Pemrograman. jadi ini
+dibuat hanya untuk belajar saja, request by Setiaji
 
-## ✨ Fitur
-- Fitur utama 1
-- Fitur utama 2
-- Fitur utama 3
+## 👥 Kontributor
+- [Aldiii](https://github.com/codename-zakay)
+- [Setiajiii](https://github.com/IlhamAjiIT)
+- [Akhbarsss](https://github.com/akhbarss)
 
 ## 🧩 Teknologi yang Digunakan
-- HTML, CSS, JavaScript
-- Laravel / React / Node.js
-- MySQL / MongoDB
-
-## ⚙️ Instalasi
-Langkah-langkah untuk menjalankan proyek:
-```bash
-git clone https://github.com/username/nama-proyek.git
-cd nama-proyek
-npm install
-npm start
+- Python
