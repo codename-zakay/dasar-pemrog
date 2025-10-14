@@ -1,2 +1,21 @@
-# Dasar Pemorgraman
-Hai Mirza disini a.k.a Zakay here, repo ini bakalan jadi repo untuk belajar Mata Kuliah Dasar Pemrograman - Bina Sarana Informatika (Sistem Informasi). Free to See
+# 🚀 Nama Proyek
+
+Deskripsi singkat tentang proyek kamu — apa fungsinya, dan kenapa dibuat.
+
+## ✨ Fitur
+- Fitur utama 1
+- Fitur utama 2
+- Fitur utama 3
+
+## 🧩 Teknologi yang Digunakan
+- HTML, CSS, JavaScript
+- Laravel / React / Node.js
+- MySQL / MongoDB
+
+## ⚙️ Instalasi
+Langkah-langkah untuk menjalankan proyek:
+```bash
+git clone https://github.com/username/nama-proyek.git
+cd nama-proyek
+npm install
+npm start
