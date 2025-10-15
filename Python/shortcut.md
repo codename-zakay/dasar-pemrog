@@ -11,5 +11,6 @@ else:
 
 Cara If Else yang singkat dalam 1 line
 ```bash
+angka = 75
 print('Anda Lulus' if angka >= 70 else 'Anda Tidak Lulus')
 ```
