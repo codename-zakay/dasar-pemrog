@@ -2,7 +2,6 @@
 ## if shortcut
 Cara If Else yang kita Ketahui
 ```bash
-# if dan else
 angka = 75
 if angka >= 70:
     print('Anda Lulus')
