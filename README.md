@@ -8,5 +8,5 @@ dibuat hanya untuk belajar saja, request by Setiaji
 - [Setiajiii](https://github.com/IlhamAjiIT)
 - [Akhbarsss](https://github.com/akhbarss)
 
-## 🧩 Teknologi yang Digunakan
+## 🧩 Bahasa yang Kita Gunakan saat ini
 - Python
