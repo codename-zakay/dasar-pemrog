@@ -10,7 +10,7 @@ csze = {
     'c cup': '   ',
     'd cup': '    ',
     'g cup': '     ',
-}
+} #dict
 
 while True:
     os.system('cls' if os.name == 'nt' else 'clear')
