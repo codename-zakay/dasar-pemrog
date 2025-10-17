@@ -21,7 +21,7 @@ while True:
         input("Tekan Enter untuk mengulang....")
         continue
 
-    #struk pembayaran
+#struk pembayaran
     os.system('cls' if os.name == 'nt' else 'clear')
     print("="*25)
     print("      STRUK PEMBAYARAN     ")

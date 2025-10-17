@@ -40,10 +40,10 @@ else:
 
 Total = gaji_pokok + tunjangan_jabatan + tunjangan_pendidikan + Uang_lembur
 
-print("===Struk Gaji Karyawan===")
+print("=== Struk Gaji Karyawan ===")
 print(f"Nama Karyawan : {Nama_Karyawan}")
 print(f"Gaji Pokok : Rp. {gaji:,.0f}")
 print(f"Tunjangan Jabatan : Rp. {tunjangan_jabatan:,.0f}")
 print(f"Tunjangan Pendidikan : Rp. {tunjangan_pendidikan:,.0f}")
 print(f"Total Gaji Bulan ini : Rp. {Total:,}")
-print('='*25)
+print('='*26)

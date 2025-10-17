@@ -1,5 +1,5 @@
 import os,time
-#asd
+
 while True:
     os.system ('cls' if os.name == 'nt' else 'clear')
     print('='*15, 'Boobs', '='*15) 
