@@ -1,7 +1,7 @@
 import os
 
 
-def MenBuh():
+def MenBuh():  # def
     Buahn = {
         '1': 'Apel      : Rp. 7.000',
         '2': 'Pisang    : Rp. 5.000',
