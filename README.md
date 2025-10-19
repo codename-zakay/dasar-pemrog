@@ -10,3 +10,5 @@ dibuat hanya untuk belajar saja, request by Setiaji
 
 ## 🧩 Bahasa yang Kita Gunakan saat ini
 - Python
+- Jav
+  
