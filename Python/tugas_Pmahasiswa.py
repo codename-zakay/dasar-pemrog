@@ -7,7 +7,7 @@ while True:
     #input data
     Nama_Siswa = input("Masukkan Nama Siswa : ").strip()
     Nis = input("Masukkan NIS : ").strip()
-    Jurusan= input("Masukkan Jurusan : ").strip().upper()
+    Jurusan= input("Masukkan Jurusan SI/SIA: ").strip().upper()
 
 #pilihan jurusan
     if Jurusan.upper() == "SI":
@@ -28,12 +28,12 @@ while True:
     print("="*25)
     print("Nama Siswa :", Nama_Siswa)
     print(f"Nis  :", Nis)
-    print("Jurusan :",Jurusan)
+    print("Jurusan :",Nama_Jurusan)
     print("Harga : Rp{:,.0f}".format(Harga).replace(",", "."))
     print('='*25)
 
 # Tanya apakah ingin input data lagi
     ulang = input("Apakah ingin input data lagi? (y/n): ").strip().lower()
     if ulang != 'y':
-        print("Terima kasih! Program selesai.")
+        print("Terima kasih! Sudah Melakukan Pendaftaran")
         break
