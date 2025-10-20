@@ -7,6 +7,9 @@ dibuat hanya untuk belajar saja, request by Setiaji
 - [Aldiii](https://github.com/codename-zakay)
 - [Setiajiii](https://github.com/IlhamAjiIT)
 - [Akhbarsss](https://github.com/akhbarss)
+- [KimLubisss](https://github.com/rafafadilah)
 
-## 🧩 Teknologi yang Digunakan
+## 🧩 Bahasa yang Kita Gunakan saat ini
 - Python
+- Java
+  
