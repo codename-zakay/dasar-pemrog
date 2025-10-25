@@ -13,11 +13,11 @@ dibuat hanya untuk belajar saja, request by Setiaji
 - Python
 - Java
   
-# Machine Learning 
+# ⚙️ Machine Learning 
 machine learning yang kita pakai disini, masih awam ya puh. disini kita pakai Framework Tensorflow
 dengan beberapa Library tambahan seperti Keras, Matplotlib, dan Numpy
 
-## Tensorflow Installation
+## 🖥️ Tensorflow Installation
 kalian bisa liat di websitenya [Tensorflow](https://www.tensorflow.org/)
 atau ikuti langkah berikut
 
