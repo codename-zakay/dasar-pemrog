@@ -1,7 +1,7 @@
 import os
 
 
-def MenBuh():
+def MenBuh():  # def
     Buahn = {
         '1': 'Apel      : Rp. 7.000',
         '2': 'Pisang    : Rp. 5.000',
@@ -10,6 +10,7 @@ def MenBuh():
         '5': 'Melon     : RP. 5.000'
     }
     return Buahn
+
 
 def MenMak():
     MakTrad = {
@@ -31,12 +32,37 @@ def MenMak():
     return {'Trad': MakTrad, 'Mod': MakMod}
 
 
+def MenNum():
+    TehNum = {
+        '1': 'Teh Manis     : Rp. 3.000',
+        '2': 'Teh Tawar     : Rp. 2.000',
+        '3': 'Teh Hijau     : Rp. 5.000',
+        '4': 'Teh Oloong    : Rp. 5.000',
+        '5': 'Teh Hitam     : RP. 7.000'
+    }
+    CofNum = {
+        '1': 'Americano    : Rp. 8.000',
+        '2': 'Cappucino    : Rp. 10.000',
+        '3': 'Creamy Mokka : Rp. 10.000',
+        '4': 'Sugar Lemon  : Rp. 8.000',
+        '5': 'Kopi Hitam   : RP. 5.000'
+    }
+    ModNum = {
+        '1': 'Soft Drinks     : Rp. 8.000',
+        '2': 'Rainbow Shot    : Rp. 15.000',
+        '3': 'Matcha Latte    : Rp. 25.000',
+        '4': 'Cendol Dawets   : Rp. 5.000',
+        '5': 'Cocktail        : RP. 150.000'
+    }
+    return {'Tea': TehNum, 'Kopi': CofNum, 'SD': ModNum}
+
+
 while True:
     os.system('cls' if os.name == 'nt' else 'clear')
     print('=' * 40)
     print('Selamat Datang di Restoran Pondok Wenak')
     print('=' * 40)
-    print(         'Silakan Pilih Menu            ')
+    print('Silakan Pilih Menu            ')
     print('1.) Menu Buah')
     print('2.) Menu Makanan')
     print('3.) Menu Minuman')
@@ -58,9 +84,9 @@ while True:
         print('    1.) Tradisional - 2.) Modern    ')
         print('====================================')
         MakMenu = MenMak()
-        SubPil = int(input('Silahkan Pilih dengan Angka : '))
+        SubPil = input('Silahkan Pilih dengan Angka : ')
 
-        if SubPil == 1:
+        if SubPil == '1':
             os.system('cls' if os.name == 'nt' else 'clear')
             print('==========================')
             print('     Menu Tradisional     ')
@@ -68,3 +94,36 @@ while True:
             for key, value in MakMenu['Trad'].items():
                 print(f'{key}. {value}')
             PilMak = input('Pilih Sesuai Angka : ')
+
+        elif SubPil == '2':
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print('==========================')
+            print('       Menu Modern        ')
+            print('==========================')
+            for key, value in MakMenu['Mod'].items():
+                print(f'{key}. {value}')
+            PilMak = input('Pilih Sesuai Angka : ')
+
+    elif PilHan == '3':
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print('====================================')
+        print('         Silakan Pilih Menu         ')
+        print('1.) Tea - 2.) Coffe - 3.) Softdrinks')
+        print('====================================')
+        SoftMinum = MenNum()
+        SubPil = input('Silahkan Pilih dengan Angka : ')
+
+        if SubPil == '1':
+            for key, value in SoftMinum['Tea'].items():
+                print(f'{key}. {value}')
+            PilNUm = input('Pilih Sesuai Angka : ')
+
+        elif SubPil == '2':
+            for key, value in MenNum['Kopi'].items():
+                print(f'{key}. {value}')
+            PilNUm = input('Pilih Sesuai Angka : ')
+
+        elif SubPil == '3':
+            for key, value in MenNum['SD'].items():
+                print(f'{key}. {value}')
+            PilNUm = input('Pilih Sesuai Angka : ')
