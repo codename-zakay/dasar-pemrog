@@ -1,4 +1,6 @@
-def Faktor(a):
+import os
+os.system ('cls' if os.name == 'nt' else 'clear')
+def Faktor(a): 
     if a == 1:
         return (a)
     else:
