@@ -7,7 +7,7 @@ st.set_page_config(
 	page_icon = ":tangerine:"
 )
 
-model = joblib.load("/MLJeruk/model_klasifikasi_jeruk.joblib")
+model = joblib.load("model_klasifikasi_jeruk.joblib")
 
 st.title(":tangerine: Belajar Klasifikasi Jeruk")
 st.markdown("Aplikasi machine learning classification untuk memprediksi kualitas jeruk")
