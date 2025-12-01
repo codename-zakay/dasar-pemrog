@@ -25,7 +25,7 @@ if st.button("Prediksi", type="primary"):
 	prediksi = model.predict(data_baru)[0]
 	presentase = max(model.predict_proba(data_baru)[0])
 	st.success(f"Model memprediksi **{prediksi}** dengan tingkat keyakinan **{presentase*100:.2f}%**")
-	st.balloons()
+	st.snow()
 
 st.divider()
 st.caption("Dibuat dengan :tangerine: oleh **Adi Setiawan**")
