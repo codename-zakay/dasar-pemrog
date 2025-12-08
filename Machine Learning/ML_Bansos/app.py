@@ -381,26 +381,6 @@ if uploaded_file is not None:
                     }).set_index('Status')
                     st.bar_chart(fig, use_container_width=True)
             
-            # Feature Importance
-            st.subheader("🔝 Tingkat Kepentingan Fitur")
-            
-            feature_names = X.columns
-            importances = model.feature_importances_
-            importance_df = pd.DataFrame({
-                'Fitur': feature_names,
-                'Importance': importances
-            }).sort_values('Importance', ascending=False)
-            
-            # Bar chart horizontal untuk feature importance
-            importance_df_sorted = importance_df.sort_values('Importance', ascending=True)
-            importance_df_sorted.set_index('Fitur', inplace=True)
-            
-            st.bar_chart(importance_df_sorted)
-            
-            # Tabel feature importance
-            importance_df['Importance_Pct'] = importance_df['Importance'].apply(lambda x: f"{x:.2%}")
-            st.dataframe(importance_df[['Fitur', 'Importance_Pct']], use_container_width=True)
-            
             # Rekomendasi Prioritas
             st.subheader("🎯 Rekomendasi Prioritas Penerima Bantuan")
             
