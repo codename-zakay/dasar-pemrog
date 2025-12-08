@@ -399,7 +399,7 @@ else:
     
     | No | Nama | NIK | No KK | Kabupaten/Kota | Kecamatan | Desa/Kelurahan | Alamat (Jalan/RT dan RW) | Klaster | Usulan |
     |----|------|-----|-------|----------------|-----------|----------------|--------------------------|---------|--------|
-    | 1  | Hairiah | ... | ... | Bekasi | Tambun Selatan | Sumber Jaya | Kp. Pulo Rt 001 Rw 035 | Lansia | ... |
+    | 1  | Hairiah | ... | ... | ... | ... | ... | ... | ... | ... |
     
     ### 🔧 Teknologi yang Digunakan:
     - **Python** dengan **scikit-learn** (Random Forest)
@@ -411,9 +411,9 @@ else:
     example_data = {
         'No': [1, 2, 3],
         'Nama': ['Hairiah', 'Rahmat Al Khoirul', 'Diyon'],
-        'NIK': ['3216064304680020', '3216061201150013', '3212232911030003'],
-        'No KK': ['3216061111100180', '3216060603230030', '3212230206099955'],
-        'Kabupaten/Kota': ['Bekasi', 'Bekasi', 'Bekasi'],
+        'NIK': ['32160***********', '32160***********', '32122***********'],
+        'No KK': ['32160***********', '32160***********', '32122***********'],
+        'Kabupaten/Kota': ['Kab. Bekasi', 'Kota Bekasi', 'Kota Bekasi'],
         'Kecamatan': ['Tambun Selatan', 'Tambun Selatan', 'Cibitung'],
         'Desa/Kelurahan': ['Sumber Jaya', 'Sumber Jaya', 'Wanasari'],
         'Alamat (Jalan/RT dan RW)': ['Kp. Pulo Rt 001 Rw 035', 'Kp. Pulo Rt 001 Rw 036', 'Bekasi Regensi I Rt 004 Rw 005'],
