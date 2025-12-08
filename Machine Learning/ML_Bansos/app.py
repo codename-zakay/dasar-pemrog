@@ -280,7 +280,7 @@ if uploaded_file is not None:
             # Prediksi untuk semua data
             predictions = model.predict(X)
             df_clean['Prediksi_Status'] = predictions
-            df_clean['Prediksi_Status_Label'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'})
+            df_clean['Status'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'})
             
             # Hitung probabilitas
             probabilities = model.predict_proba(X)[:, 0]
@@ -297,7 +297,7 @@ if uploaded_file is not None:
             container_prediksi = st.container(height=400)
             with container_prediksi:
                 result_cols = ['No', 'Nama', 'Klaster', 'Kecamatan', 'Desa/Kelurahan', 
-                             'Prediksi_Status_Label', 'Probabilitas_Belum']
+                             'Status', 'Probabilitas_Belum']
                 result_cols = [col for col in result_cols if col in df_clean.columns]
                 
                 # Urutkan berdasarkan probabilitas belum
@@ -307,7 +307,7 @@ if uploaded_file is not None:
             # Analisis berdasarkan wilayah
             st.subheader("📍 Analisis Berdasarkan Wilayah")
             
-            if 'Kecamatan' in df_clean.columns and 'Prediksi_Status_Label' in df_clean.columns:
+            if 'Kecamatan' in df_clean.columns and 'Status' in df_clean.columns:
                 wilayah_stats = df_clean.groupby('Kecamatan').agg(
                     Total=('Prediksi_Status', 'count'),
                     Sudah_Dapat=('Prediksi_Status', 'sum'),
@@ -475,13 +475,8 @@ else:
     ### 1. **Persiapkan Data**
     Siapkan file Excel dengan format:
     
-    | No | Nama | NIK | No KK | Alamat Lengkap | Klaster | Usulan |
-    |----|------|-----|-------|----------------|---------|--------|
-    
-    Atau dengan alamat terpisah:
-    
-    | Kabupaten/Kota | Kecamatan | Desa/Kelurahan | Alamat Detail |
-    |----------------|-----------|----------------|---------------|
+    | No | Nama | NIK | No KK  | Kabupaten/Kota | Kecamatan | Desa/Kelurahan | Alamat Detail | Klaster | Usulan |
+    |----|------|-----|--------|----------------|-----------|----------------|---------------|---------|--------|   
     
     ### 2. **Upload Data**
     Gunakan menu upload di atas untuk mengirim file Excel.
