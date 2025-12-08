@@ -366,7 +366,7 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
-                status_counts = df_clean['Prediksi_Status_Label'].value_counts()
+                status_counts = df_clean['Status'].value_counts()
                 status_df = pd.DataFrame({
                     'Status': status_counts.index,
                     'Jumlah': status_counts.values
@@ -376,9 +376,9 @@ if uploaded_file is not None:
             
             with col2:
                 # Pie chart untuk status
-                if 'Prediksi_Status_Label' in df_clean.columns:
+                if 'Status' in df_clean.columns:
                     import plotly.express as px
-                    fig = px.pie(df_clean, names='Prediksi_Status_Label', 
+                    fig = px.pie(df_clean, names='Status', 
                                 title='Proporsi Status Prediksi')
                     st.plotly_chart(fig, use_container_width=True)
             
