@@ -214,9 +214,7 @@ if uploaded_file is not None:
         st.subheader("📊 Data Lengkap Usulan Bantuan")
         
         # Container untuk tabel dengan tinggi tetap dan scroll
-        container = st.container(height=400)  # Tinggi 400px, bisa di-scroll
-        with container:
-            st.dataframe(df, use_container_width=True)
+        st.dataframe(df, use_container_width=True)
         
         st.caption(f"Total data: {len(df)} baris, {len(df.columns)} kolom")
         
@@ -240,7 +238,7 @@ if uploaded_file is not None:
             st.subheader("🏠 Data Setelah Preprocessing")
             
             # Container untuk tabel data yang diproses
-            container_proses = st.container(height=300)
+            container_proses = st.dataframe(height=300)
             with container_proses:
                 address_cols = ['No', 'Nama', 'Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat Detail', 'Klaster', 'Usulan']
                 display_cols = [col for col in address_cols if col in df_clean.columns]
@@ -261,7 +259,7 @@ if uploaded_file is not None:
                     random_state=random_seed
                 )
             
-            st.success(f"✅ Model berhasil dilatih!")
+            st.success(f"✅ Hasil Model Telah Dilatih!")
             
             # Tampilkan metrics
             col1, col2, col3, col4 = st.columns(4)
@@ -294,7 +292,7 @@ if uploaded_file is not None:
             st.subheader("📋 Hasil Prediksi Semua Data")
             
             # Container untuk hasil prediksi
-            container_prediksi = st.container(height=400)
+            container_prediksi = st.dataframe(height=400)
             with container_prediksi:
                 result_cols = ['No', 'Nama', 'Klaster', 'Kecamatan', 'Desa/Kelurahan', 
                              'Status', 'Probabilitas_Belum']
