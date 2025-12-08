@@ -85,53 +85,6 @@ def preprocess_data(df):
             df[col].fillna(df[col].median() if df[col].dtype != 'object' else 0, inplace=True)
     
     return df
-
-def prepare_features(df):
-    """
-    Membuat fitur untuk model dari data yang ada.
-    """
-    df_features = df.copy()
-    
-    # Fitur 1: Panjang alamat detail
-    df_features['Panjang_Alamat_Detail'] = df_features['Alamat Detail'].apply(lambda x: len(str(x).split()))
-    
-    # Fitur 2: Panjang NIK
-    df_features['Panjang_NIK'] = df_features['NIK'].apply(lambda x: len(str(x)))
-    
-    # Fitur 3: Encoding Klaster
-    le_klaster = LabelEncoder()
-    df_features['Klaster_Encoded'] = le_klaster.fit_transform(df_features['Klaster'])
-    
-    # Fitur 4: Apakah ada nomor KK?
-    df_features['Ada_KK'] = df_features['No KK'].apply(lambda x: 1 if pd.notna(x) and str(x).strip() != '' else 0)
-    
-    # Fitur 5-7: Encoding wilayah
-    le_kabupaten = LabelEncoder()
-    df_features['Kabupaten_Encoded'] = le_kabupaten.fit_transform(df_features['Kabupaten/Kota'].fillna('Tidak Diketahui'))
-    
-    le_kecamatan = LabelEncoder()
-    df_features['Kecamatan_Encoded'] = le_kecamatan.fit_transform(df_features['Kecamatan'].fillna('Tidak Diketahui'))
-    
-    le_desa = LabelEncoder()
-    df_features['Desa_Encoded'] = le_desa.fit_transform(df_features['Desa/Kelurahan'].fillna('Tidak Diketahui'))
-    
-    # Fitur 8: Ada RT/RW
-    df_features['Ada_RT_RW'] = df_features['Alamat Detail'].apply(
-        lambda x: 1 if any(keyword in str(x).lower() for keyword in ['rt', 'rw']) else 0
-    )
-    
-    # Fitur 9: Panjang nama
-    df_features['Panjang_Nama'] = df_features['Nama'].apply(lambda x: len(str(x).split()))
-    
-    # Pilih fitur
-    feature_cols = [
-        'Panjang_Alamat_Detail', 'Panjang_NIK', 'Klaster_Encoded', 'Ada_KK',
-        'Kabupaten_Encoded', 'Kecamatan_Encoded', 'Desa_Encoded',
-        'Ada_RT_RW', 'Panjang_Nama'
-    ]
-    
-    return df_features[feature_cols]
-
 # ============================
 # 3. FUNGSI UNTUK MEMBUAT DATA SIMULASI TARGET
 # ============================
@@ -344,16 +297,16 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("**Distribusi Prediksi per Klaster**")
+                st.markdown("**Status Bantuan Sosial - Klaster**")
                 if 'Klaster' in df_clean.columns:
-                    klaster_chart = df_clean.groupby(['Klaster', 'Prediksi_Status_Label']).size().unstack(fill_value=0)
+                    klaster_chart = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
                     
                     # Transpose untuk label horizontal
                     klaster_chart_t = klaster_chart.T
                     st.bar_chart(klaster_chart_t)
             
             with col2:
-                st.markdown("**Distribusi per Kecamatan (Top 5)**")
+                st.markdown("**Status Bantuan Sosial - Kecamatan**")
                 if 'Kecamatan' in df_clean.columns:
                     kecamatan_data = df_clean['Kecamatan'].value_counts().head(5)
                     
@@ -368,7 +321,7 @@ if uploaded_file is not None:
                     st.bar_chart(kecamatan_df)
             
             # Visualisasi tambahan
-            st.markdown("**Distribusi Status Prediksi**")
+            st.markdown("**Total Prediksi Keseluruhan**")
             col1, col2 = st.columns(2)
             
             with col1:
