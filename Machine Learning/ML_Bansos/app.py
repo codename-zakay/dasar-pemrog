@@ -375,9 +375,10 @@ if uploaded_file is not None:
             with col2:
                 # Pie chart untuk status
                 if 'Status' in df_clean.columns:
-                    import plotly.express as px
-                    fig = px.pie(df_clean, names='Status', 
-                                title='Proporsi Status Prediksi')
+                    fig = pd.DataFrame({
+                        'Status': df_clean['Status'].value_counts().index,
+                        'Jumlah': df_clean['Status'].value_counts().values
+                    }).set_index('Status')
                     st.bar_chart(fig, use_container_width=True)
             
             # Feature Importance
