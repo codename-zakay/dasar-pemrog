@@ -7,8 +7,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
-import plotly.express as px
-import plotly.graph_objects as go
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -382,7 +380,7 @@ if uploaded_file is not None:
                     import plotly.express as px
                     fig = px.pie(df_clean, names='Status', 
                                 title='Proporsi Status Prediksi')
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.bar_chart(fig, use_container_width=True)
             
             # Feature Importance
             st.subheader("🔝 Tingkat Kepentingan Fitur")
