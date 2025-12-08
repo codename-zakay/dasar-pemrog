@@ -338,16 +338,16 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("**Distribusi Prediksi per Klaster**")
+                st.markdown("**Status Bantuan Sosial - Klaster**")
                 if 'Klaster' in df_clean.columns:
-                    klaster_chart = df_clean.groupby(['Klaster', 'Prediksi_Status_Label']).size().unstack(fill_value=0)
+                    klaster_chart = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
                     
                     # Transpose untuk label horizontal
                     klaster_chart_t = klaster_chart.T
                     st.bar_chart(klaster_chart_t)
             
             with col2:
-                st.markdown("**Distribusi per Kecamatan (Top 5)**")
+                st.markdown("**Status Bantuan Sosial - Kecamatan**")
                 if 'Kecamatan' in df_clean.columns:
                     kecamatan_data = df_clean['Kecamatan'].value_counts().head(5)
                     
@@ -362,7 +362,7 @@ if uploaded_file is not None:
                     st.bar_chart(kecamatan_df)
             
             # Visualisasi tambahan
-            st.markdown("**Distribusi Status Prediksi**")
+            st.markdown("**Total Keseluruhan Status Data**")
             col1, col2 = st.columns(2)
             
             with col1:
@@ -492,12 +492,6 @@ else:
     - Jumlah pohon keputusan
     - Kedalaman maksimal
     - Random seed
-    
-    ### 4. **Train Model**
-    Klik "Train Model Sekarang" untuk melatih model dengan parameter yang ditentukan.
-    
-    ### 5. **Analisis Hasil**
-    Lihat hasil prediksi, analisis wilayah, dan rekomendasi prioritas.
     
     ### ✨ Fitur Baru:
     - **Tabel Scrollable**: Semua data ditampilkan dalam tabel yang bisa di-scroll
