@@ -536,7 +536,7 @@ if uploaded_file is not None:
                                                     'Kecamatan', 'Desa/Kelurahan',
                                                     'Status']].copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
-                st.dataframe(df_prioritas, use_container_width=True)
+                st.dataframe.columns(df_prioritas, use_container_width=True)
                 st.markdown("""
                 <div class="info-box">
                 💡 <strong>Keterangan:</strong> Data diurutkan berdasarkan probabilitas belum menerima bantuan tertinggi.
@@ -545,7 +545,7 @@ if uploaded_file is not None:
             
             with pred_tab2:
                 st.dataframe(
-                    df_clean.columns[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']],
+                    df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']],
                     use_container_width=True,
                     height=400
                 )
