@@ -8,28 +8,23 @@ from sklearn.metrics import accuracy_score, classification_report
 import warnings
 warnings.filterwarnings('ignore')
 
-# ============================
 # 1. SETTING PAGE STREAMLIT
-# ============================
 st.set_page_config(page_title="Prediksi Penerima Bantuan Sosial", page_icon="🏠", layout="wide")
 st.title("🔍 Prediksi Keluarga yang Belum Menerima Bantuan Sosial")
 st.markdown("Aplikasi ini menggunakan **Machine Learning (Random Forest)** untuk memprediksi keluarga yang belum menerima bantuan sosial berdasarkan data usulan.")
 
-# ============================
 # 2. FUNGSI UNTUK MEMPROSES DATA
-# ============================
 def split_address_column(df):
     """
     Memisahkan kolom 'Alamat Lengkap' menjadi 4 kolom terpisah.
     """
     df = df.copy()
     
-    # Cek apakah kolom alamat sudah terpisah
+
     address_columns = ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat (Jalan/RT dan RW)']
     
     if 'Alamat Lengkap' in df.columns:
         try:
-            # Coba split dengan karakter '|' jika ada
             if df['Alamat Lengkap'].astype(str).str.contains('\|').any():
                 address_parts = df['Alamat Lengkap'].astype(str).str.split('\|', expand=True)
                 if address_parts.shape[1] >= 4:
@@ -38,14 +33,12 @@ def split_address_column(df):
                     df['Desa/Kelurahan'] = address_parts[2].str.strip()
                     df['Alamat Detail'] = address_parts[3].str.strip()
             else:
-                # Gunakan kolom yang sudah ada
                 if all(col in df.columns for col in address_columns[:3]):
                     df['Kabupaten/Kota'] = df.get('Kabupaten/Kota', '')
                     df['Kecamatan'] = df.get('Kecamatan', '')
                     df['Desa/Kelurahan'] = df.get('Desa/Kelurahan', '')
                     df['Alamat Detail'] = df.get('Alamat (Jalan/RT dan RW)', df.get('Alamat Lengkap', ''))
                 else:
-                    # Buat kolom default
                     df['Kabupaten/Kota'] = 'Bekasi'
                     df['Kecamatan'] = 'Tambun Selatan'
                     df['Desa/Kelurahan'] = 'Sumber Jaya'
@@ -55,7 +48,6 @@ def split_address_column(df):
                 df[col] = ''
             df['Alamat Detail'] = df['Alamat Lengkap']
     
-    # Pastikan semua kolom alamat ada
     for col in ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat Detail']:
         if col not in df.columns:
             df[col] = ''
@@ -68,14 +60,11 @@ def preprocess_data(df):
     """
     df = df.copy()
     
-    # Partisi alamat lengkap
     df = split_address_column(df)
     
-    # Hapus baris kosong
     required_cols = ['Nama', 'Klaster']
     df.dropna(subset=required_cols, inplace=True)
     
-    # Isi missing value
     for col in df.columns:
         if df[col].dtype == 'object':
             df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else '', inplace=True)
@@ -487,3 +476,7 @@ else:
     }
     
     st.dataframe(pd.DataFrame(example_data), use_container_width=True)
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])  # Buat 3 kolom: kiri-kosong, tengah, kanan-kosong
+    with col2:  # Gunakan kolom tengah
+        st.caption("© 2024 - Developed by Kelompok 11 (Random Forest)")
