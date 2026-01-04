@@ -505,15 +505,35 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
-                import plotly.graph_objects as go
-                fig = go.Figure(data=[go.Pie(
-                    labels=['Belum Menerima', 'Sudah Menerima'],
-                    values=[belum_count, sudah_count],
-                    hole=.3,
-                    marker_colors=['#FF6B6B', '#4ECDC4']
-                )])
-                fig.update_layout(title="Persentase Status Bantuan")
-                st.plotly_chart(fig, use_container_width=True)
+                import altair as alt
+                status_data = pd.DataFrame({
+                    'Status': ['Belum Menerima', 'Sudah Menerima'],
+                    'Jumlah': [belum_count, sudah_count],
+                    'Warna': ['#FF6B6B', '#4ECDC4']
+                })
+                
+                base = alt.Chart(status_data).encode(
+                    theta=alt.Theta("Jumlah:Q", stack=True),
+                    color=alt.Color("Status:N", scale=alt.Scale(range=['#FF6B6B', '#4ECDC4']), legend=None),
+                    tooltip=['Status', 'Jumlah']
+                )
+                
+                pie = base.mark_arc(innerRadius=50, outerRadius=100)
+                text = base.mark_text(radius=120, size=14).encode(text="Jumlah:Q")
+                
+                chart = (pie + text).properties(
+                    height=300,
+                    title="Distribusi Status"
+                )
+                
+                st.altair_chart(chart, use_container_width=True)
+                
+                # Tambahkan metrics kecil
+                col1a, col1b = st.columns(2)
+                with col1a:
+                    st.metric("Belum", f"{belum_count}")
+                with col1b:
+                    st.metric("Sudah", f"{sudah_count}")
             
             with col2:
                 # Bar chart per klaster
@@ -743,11 +763,11 @@ else:
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("📁 Format", "Excel (.xlsx)")
+        st.metric(" Format", "Excel (.xlsx)")
     with col2:
-        st.metric("🤖 Algoritma", "Random Forest")
+        st.metric(" Algoritma", "Random Forest")
     with col3:
-        st.metric("⚡ Kecepatan", "< 30 detik")
+        st.metric(" Kecepatan", "< 30 detik")
     
     # Footer landing page
     st.markdown("---")
