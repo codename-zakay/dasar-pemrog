@@ -762,7 +762,7 @@ else:
                 <strong>🏛️Universitas Bina Sarana Informatika</strong> • Dasar Pemrograman, Machine Learning
             </p>
             <p style="margin: 5px 0 0 0; font-size: 11px;">
-                Developed by <strong>Kelompok 11</strong> • © 2024 Oktober - Desember
+                Developed by <strong>Kelompok 11</strong> • © Oktober - Desember 2024
             </p>
         </div>
         """, unsafe_allow_html=True)
