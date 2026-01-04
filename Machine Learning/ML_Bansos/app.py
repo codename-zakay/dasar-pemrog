@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -8,11 +7,11 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import warnings
 import datetime
+import plotly.graph_objects as go
+import plotly.express as px 
 warnings.filterwarnings('ignore')
 
-# ============================
 # 1. SETTING PAGE STREAMLIT
-# ============================
 st.set_page_config(
     page_title="Prediksi Penerima Bantuan Sosial", 
     page_icon="🏠", 
@@ -20,7 +19,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS untuk UI yang lebih baik
 st.markdown("""
 <style>
     /* Main container styling */
@@ -107,34 +105,26 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Watermark
-st.markdown('<div class="watermark">🤖 BANSOS AI PREDICT v1.0</div>', unsafe_allow_html=True)
-
 # Header dengan gradient
 st.markdown("""
 <div class="main-header">
     <h1 style="margin:0; font-size:2.2rem;">🏠 Prediksi Penerima Bantuan Sosial</h1>
     <p style="margin:0.5rem 0 0 0; font-size:1.1rem; opacity:0.9;">
-    Sistem cerdas untuk mengidentifikasi keluarga yang belum menerima bantuan sosial menggunakan Machine Learning
+    Sistem Cerdas untuk mengidentifikasi keluarga yang belum menerima bantuan sosial menggunakan Machine Learning
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-# ============================
 # 2. FUNGSI UNTUK MEMPROSES DATA
-# ============================
 def split_address_column(df):
     """
     Memisahkan kolom 'Alamat Lengkap' menjadi 4 kolom terpisah.
     """
     df = df.copy()
-    
-    # Cek apakah kolom alamat sudah terpisah
     address_columns = ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat (Jalan/RT dan RW)']
     
     if 'Alamat Lengkap' in df.columns:
         try:
-            # Coba split dengan karakter '|' jika ada
             if df['Alamat Lengkap'].astype(str).str.contains('\|').any():
                 address_parts = df['Alamat Lengkap'].astype(str).str.split('\|', expand=True)
                 if address_parts.shape[1] >= 4:
@@ -143,14 +133,12 @@ def split_address_column(df):
                     df['Desa/Kelurahan'] = address_parts[2].str.strip()
                     df['Alamat Detail'] = address_parts[3].str.strip()
             else:
-                # Gunakan kolom yang sudah ada
                 if all(col in df.columns for col in address_columns[:3]):
                     df['Kabupaten/Kota'] = df.get('Kabupaten/Kota', '')
                     df['Kecamatan'] = df.get('Kecamatan', '')
                     df['Desa/Kelurahan'] = df.get('Desa/Kelurahan', '')
                     df['Alamat Detail'] = df.get('Alamat (Jalan/RT dan RW)', df.get('Alamat Lengkap', ''))
                 else:
-                    # Buat kolom default
                     df['Kabupaten/Kota'] = 'Bekasi'
                     df['Kecamatan'] = 'Tambun Selatan'
                     df['Desa/Kelurahan'] = 'Sumber Jaya'
@@ -159,8 +147,7 @@ def split_address_column(df):
             for col in ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan']:
                 df[col] = ''
             df['Alamat Detail'] = df['Alamat Lengkap']
-    
-    # Pastikan semua kolom alamat ada
+            
     for col in ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat Detail']:
         if col not in df.columns:
             df[col] = ''
@@ -239,12 +226,8 @@ def prepare_features(df):
 # 3. FUNGSI UNTUK MEMBUAT DATA SIMULASI TARGET
 # ============================
 def create_simulation_target(df, seed=42):
-    """
-    Membuat target simulasi untuk training model.
-    """
     np.random.seed(seed)
     
-    # Beri bobot berdasarkan klaster
     conditions = [
         df['Klaster'].str.contains('Lansia', na=False),
         df['Klaster'].str.contains('Anak', na=False),
@@ -256,7 +239,6 @@ def create_simulation_target(df, seed=42):
     
     prob = np.select(conditions, choices, default=default_prob)
     
-    # Tambah bobot berdasarkan kecamatan
     if 'Kecamatan' in df.columns:
         prior_kecamatan = ['Tambun Selatan', 'Cibitung']
         mask_prior_kecamatan = df['Kecamatan'].isin(prior_kecamatan)
@@ -267,9 +249,7 @@ def create_simulation_target(df, seed=42):
     
     return y
 
-# ============================
 # 4. FUNGSI UNTUK MELATIH MODEL
-# ============================
 def train_model(X, y, test_size=0.2, n_estimators=100, max_depth=7, random_state=42):
     """
     Melatih model Random Forest dengan parameter yang bisa diatur.
@@ -301,9 +281,7 @@ def train_model(X, y, test_size=0.2, n_estimators=100, max_depth=7, random_state
     
     return model, acc, report, X_test, y_test, y_pred
 
-# ============================
 # 5. SIDEBAR YANG USER FRIENDLY
-# ============================
 with st.sidebar:
     st.markdown("### ⚙️ **Pengaturan Model**")
     
@@ -368,7 +346,6 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Tombol aksi utama
     train_button = st.button(
         "🚀 **Train Model Sekarang**",
         type="primary",
@@ -379,22 +356,10 @@ with st.sidebar:
     
     # Quick stats di sidebar
     st.markdown("### 📊 **Info Cepat**")
-    if 'df' in locals():
-        total_data = len(df)
-        total_features = 9
-    else:
-        total_data = "Belum ada data"
-        total_features = 9
-    
-    st.metric("Total Fitur", total_features)
     st.metric("Algoritma", "Random Forest")
     st.metric("Status Model", "Ready" if train_button else "Idle")
 
-# ============================
 # 6. MAIN INTERFACE
-# ============================
-
-# Upload file dengan styling yang lebih baik
 st.markdown("### 📤 **Upload Data**")
 uploaded_file = st.file_uploader(
     "Unggah file Excel data usulan bantuan sosial",
@@ -509,8 +474,7 @@ if uploaded_file is not None:
                 )
                 
                 training_placeholder.success(f"✅ Model berhasil dilatih dengan akurasi: **{accuracy:.2%}**")
-            
-            # Hasil prediksi
+
             st.markdown("### 📊 **Hasil Prediksi**")
             
             # Prediksi untuk semua data
@@ -546,7 +510,6 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
-                import plotly.graph_objects as go
                 fig = go.Figure(data=[go.Pie(
                     labels=['Belum Menerima', 'Sudah Menerima'],
                     values=[belum_count, sudah_count],
@@ -699,7 +662,7 @@ if uploaded_file is not None:
                     <span style="color: #888;">Generated: {current_time}</span>
                 </p>
                 <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">
-                    Aplikasi Prediksi Penerima Bantuan Sosial v1.0 • 
+                    Aplikasi Prediksi Penerima Bantuan Sosial • 
                     <span style="color: #4CAF50;">🟢 Ready</span>
                 </p>
             </div>
@@ -725,7 +688,6 @@ if uploaded_file is not None:
         """, unsafe_allow_html=True)
 
 else:
-    # Landing page yang informatif
     st.markdown("""
     <div class="info-box">
     📋 <strong>Selamat datang di Sistem Prediksi Bantuan Sosial!</strong><br>
@@ -738,20 +700,20 @@ else:
     with col1:
         st.markdown("### 📥 **Cara Menggunakan**")
         st.markdown("""
-        1. **Siapkan data** dalam format Excel
-        2. **Unggah file** menggunakan menu di atas
-        3. **Atur parameter** model di sidebar
-        4. **Klik "Train Model"** untuk memulai analisis
-        5. **Download hasil** untuk laporan
+        - **Siapkan data** dalam format Excel
+        - **Unggah file** menggunakan menu di atas
+        - **Atur parameter** model di sidebar
+        - **Klik "Train Model"** untuk memulai analisis
+        - **Download hasil** untuk laporan
         """)
         
         st.markdown("### 🎯 **Fitur Utama**")
         st.markdown("""
-        - 🤖 **Prediksi otomatis** menggunakan Random Forest
-        - 📊 **Visualisasi interaktif** hasil prediksi
-        - 📍 **Analisis per wilayah** (kecamatan/desa)
-        - 📥 **Ekspor data** dalam format CSV
-        - ⚙️ **Multiple presets** untuk kebutuhan berbeda
+        -  **Prediksi otomatis** menggunakan Random Forest
+        -  **Visualisasi interaktif** hasil prediksi
+        -  **Analisis per wilayah** (kecamatan/desa)
+        -  **Ekspor data** dalam format CSV
+        -  **Multiple presets** untuk kebutuhan berbeda
         """)
     
     with col2:
@@ -798,10 +760,10 @@ else:
         st.markdown("""
         <div style="text-align: center; color: #888; font-size: 12px; padding: 20px;">
             <p style="margin: 0;">
-                <strong>🏛️ DINAS SOSIAL</strong> • Sistem Prediksi Berbasis Machine Learning
+                <strong>🏛️Universitas Bina Sarana Informatika</strong> • Dasar Pemrograman, Machine Learning
             </p>
             <p style="margin: 5px 0 0 0; font-size: 11px;">
-                Developed by <strong>Kelompok 11</strong> • © 2024 • v1.0
+                Developed by <strong>Kelompok 11</strong> • © 2024 Oktober - Desember
             </p>
         </div>
         """, unsafe_allow_html=True)
