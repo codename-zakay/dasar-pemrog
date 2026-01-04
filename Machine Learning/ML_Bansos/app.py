@@ -7,8 +7,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import warnings
 import datetime
-import plotly.graph_objects as go
-import plotly.express as px 
 warnings.filterwarnings('ignore')
 
 # 1. SETTING PAGE STREAMLIT
@@ -510,6 +508,7 @@ if uploaded_file is not None:
             col1, col2 = st.columns(2)
             
             with col1:
+                import plotly.graph_objects as go
                 fig = go.Figure(data=[go.Pie(
                     labels=['Belum Menerima', 'Sudah Menerima'],
                     values=[belum_count, sudah_count],
