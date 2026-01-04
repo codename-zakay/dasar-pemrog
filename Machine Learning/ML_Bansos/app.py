@@ -285,32 +285,32 @@ with st.sidebar:
     st.markdown("#### 🎯 **Preset Model**")
     config_preset = st.radio(
         "Pilih preset model:",
-        ["⚡ Cepat (Fast)", "⚖️ Seimbang (Balanced)", "🎯 Akurat (Accurate)", "🔧 Kustom (Custom)"],
+        ["Fast", "Balanced", "Accurate", "Custom"],
         index=1,
         label_visibility="collapsed"
     )
     
     # Default values berdasarkan preset
-    if config_preset == "⚡ Cepat (Fast)":
+    if config_preset == "Fast":
         test_size = 0.30
         n_estimators = 50
         max_depth = 5
         random_seed = 42
         
-    elif config_preset == "⚖️ Seimbang (Balanced)":
+    elif config_preset == "Balanced":
         test_size = 0.20
         n_estimators = 100
         max_depth = 7
         random_seed = 42
         
-    elif config_preset == "🎯 Akurat (Accurate)":
+    elif config_preset == "Accurate":
         test_size = 0.15
         n_estimators = 500
         max_depth = 10
         random_seed = 42
         
     else:  # Custom
-        st.markdown("#### 🔧 **Parameter Kustom**")
+        st.markdown("#### **Parameter Kustom**")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -352,8 +352,8 @@ with st.sidebar:
     
     # Quick stats di sidebar
     st.markdown("### 📊 **Info Cepat**")
-    st.metric("Algoritma", "Random Forest")
-    st.metric("Status Model", "Ready" if train_button else "Idle")
+    st.metric("Algoritma", "### **Random Forest**")
+    st.metric("Status Model", "### **Ready**" if train_button else "Idle")
 
 # 6. MAIN INTERFACE
 st.markdown("### 📤 **Upload Data**")
@@ -385,15 +385,6 @@ if uploaded_file is not None:
             
             with tab2:
                 st.dataframe(df.head(10), use_container_width=True)
-                
-                # Info kolom
-                col_info = pd.DataFrame({
-                    'Kolom': df.columns,
-                    'Tipe Data': df.dtypes.values,
-                    'Non-Null': df.notna().sum().values,
-                    'Null': df.isna().sum().values
-                })
-                st.dataframe(col_info, use_container_width=True)
             
             with tab3:
                 col1, col2, col3 = st.columns(3)
@@ -476,11 +467,7 @@ if uploaded_file is not None:
             # Prediksi untuk semua data
             predictions = model.predict(X)
             df_clean['Prediksi_Status'] = predictions
-            df_clean['Status'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'})
-            
-            # Hitung probabilitas
-            probabilities = model.predict_proba(X)[:, 0]
-            df_clean['Probabilitas_Belum'] = probabilities
+            df_clean['Status'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'}) 
             
             # Statistik
             belum_count = (predictions == 0).sum()
@@ -550,7 +537,6 @@ if uploaded_file is not None:
                                                     'Status']].copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 st.dataframe(df_prioritas, use_container_width=True)
-                
                 st.markdown("""
                 <div class="info-box">
                 💡 <strong>Keterangan:</strong> Data diurutkan berdasarkan probabilitas belum menerima bantuan tertinggi.
