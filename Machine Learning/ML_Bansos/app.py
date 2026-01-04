@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,25 +7,134 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import warnings
+import datetime
 warnings.filterwarnings('ignore')
 
+# ============================
 # 1. SETTING PAGE STREAMLIT
-st.set_page_config(page_title="Prediksi Penerima Bantuan Sosial", page_icon="🏠", layout="wide")
-st.title("🔍 Prediksi Keluarga yang Belum Menerima Bantuan Sosial")
-st.markdown("Aplikasi ini menggunakan **Machine Learning (Random Forest)** untuk memprediksi keluarga yang belum menerima bantuan sosial berdasarkan data usulan.")
+# ============================
+st.set_page_config(
+    page_title="Prediksi Penerima Bantuan Sosial", 
+    page_icon="🏠", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
+# Custom CSS untuk UI yang lebih baik
+st.markdown("""
+<style>
+    /* Main container styling */
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+    
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .success-box {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    .info-box {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    .warning-box {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px 8px 0 0;
+        padding: 10px 20px;
+    }
+    
+    /* Watermark */
+    .watermark {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.3;
+        font-size: 14px;
+        color: gray;
+        text-align: center;
+        z-index: 9999;
+        pointer-events: none;
+        font-family: Arial, sans-serif;
+        white-space: nowrap;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Watermark
+st.markdown('<div class="watermark">🤖 BANSOS AI PREDICT v1.0</div>', unsafe_allow_html=True)
+
+# Header dengan gradient
+st.markdown("""
+<div class="main-header">
+    <h1 style="margin:0; font-size:2.2rem;">🏠 Prediksi Penerima Bantuan Sosial</h1>
+    <p style="margin:0.5rem 0 0 0; font-size:1.1rem; opacity:0.9;">
+    Sistem cerdas untuk mengidentifikasi keluarga yang belum menerima bantuan sosial menggunakan Machine Learning
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# ============================
 # 2. FUNGSI UNTUK MEMPROSES DATA
+# ============================
 def split_address_column(df):
     """
     Memisahkan kolom 'Alamat Lengkap' menjadi 4 kolom terpisah.
     """
     df = df.copy()
     
-
+    # Cek apakah kolom alamat sudah terpisah
     address_columns = ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat (Jalan/RT dan RW)']
     
     if 'Alamat Lengkap' in df.columns:
         try:
+            # Coba split dengan karakter '|' jika ada
             if df['Alamat Lengkap'].astype(str).str.contains('\|').any():
                 address_parts = df['Alamat Lengkap'].astype(str).str.split('\|', expand=True)
                 if address_parts.shape[1] >= 4:
@@ -33,12 +143,14 @@ def split_address_column(df):
                     df['Desa/Kelurahan'] = address_parts[2].str.strip()
                     df['Alamat Detail'] = address_parts[3].str.strip()
             else:
+                # Gunakan kolom yang sudah ada
                 if all(col in df.columns for col in address_columns[:3]):
                     df['Kabupaten/Kota'] = df.get('Kabupaten/Kota', '')
                     df['Kecamatan'] = df.get('Kecamatan', '')
                     df['Desa/Kelurahan'] = df.get('Desa/Kelurahan', '')
                     df['Alamat Detail'] = df.get('Alamat (Jalan/RT dan RW)', df.get('Alamat Lengkap', ''))
                 else:
+                    # Buat kolom default
                     df['Kabupaten/Kota'] = 'Bekasi'
                     df['Kecamatan'] = 'Tambun Selatan'
                     df['Desa/Kelurahan'] = 'Sumber Jaya'
@@ -48,6 +160,7 @@ def split_address_column(df):
                 df[col] = ''
             df['Alamat Detail'] = df['Alamat Lengkap']
     
+    # Pastikan semua kolom alamat ada
     for col in ['Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat Detail']:
         if col not in df.columns:
             df[col] = ''
@@ -60,11 +173,14 @@ def preprocess_data(df):
     """
     df = df.copy()
     
+    # Partisi alamat lengkap
     df = split_address_column(df)
     
+    # Hapus baris kosong
     required_cols = ['Nama', 'Klaster']
     df.dropna(subset=required_cols, inplace=True)
     
+    # Isi missing value
     for col in df.columns:
         if df[col].dtype == 'object':
             df[col].fillna(df[col].mode()[0] if not df[col].mode().empty else '', inplace=True)
@@ -186,58 +302,204 @@ def train_model(X, y, test_size=0.2, n_estimators=100, max_depth=7, random_state
     return model, acc, report, X_test, y_test, y_pred
 
 # ============================
-# 5. INTERFACE STREAMLIT
+# 5. SIDEBAR YANG USER FRIENDLY
+# ============================
+with st.sidebar:
+    st.markdown("### ⚙️ **Pengaturan Model**")
+    
+    # Preset konfigurasi dengan card style
+    st.markdown("#### 🎯 **Preset Model**")
+    config_preset = st.radio(
+        "Pilih preset model:",
+        ["⚡ Cepat (Fast)", "⚖️ Seimbang (Balanced)", "🎯 Akurat (Accurate)", "🔧 Kustom (Custom)"],
+        index=1,
+        label_visibility="collapsed"
+    )
+    
+    # Default values berdasarkan preset
+    if config_preset == "⚡ Cepat (Fast)":
+        test_size = 0.30
+        n_estimators = 50
+        max_depth = 5
+        random_seed = 42
+        
+    elif config_preset == "⚖️ Seimbang (Balanced)":
+        test_size = 0.20
+        n_estimators = 100
+        max_depth = 7
+        random_seed = 42
+        
+    elif config_preset == "🎯 Akurat (Accurate)":
+        test_size = 0.15
+        n_estimators = 500
+        max_depth = 10
+        random_seed = 42
+        
+    else:  # Custom
+        st.markdown("#### 🔧 **Parameter Kustom**")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            test_size = st.select_slider(
+                "Ukuran Testing",
+                options=[0.1, 0.15, 0.2, 0.25, 0.3],
+                value=0.2,
+                format_func=lambda x: f"{int(x*100)}%"
+            )
+        
+        with col2:
+            n_estimators = st.select_slider(
+                "Jumlah Pohon",
+                options=[50, 100, 200, 300, 500],
+                value=100
+            )
+        
+        max_depth = st.select_slider(
+            "Kedalaman Pohon",
+            options=[3, 5, 7, 10, 15, 20],
+            value=7
+        )
+        
+        random_seed = st.selectbox(
+            "Random Seed",
+            options=[42, 123, 456, 789, 999],
+            index=0
+        )
+    
+    st.markdown("---")
+    
+    # Tombol aksi utama
+    train_button = st.button(
+        "🚀 **Train Model Sekarang**",
+        type="primary",
+        use_container_width=True
+    )
+    
+    st.markdown("---")
+    
+    # Quick stats di sidebar
+    st.markdown("### 📊 **Info Cepat**")
+    if 'df' in locals():
+        total_data = len(df)
+        total_features = 9
+    else:
+        total_data = "Belum ada data"
+        total_features = 9
+    
+    st.metric("Total Fitur", total_features)
+    st.metric("Algoritma", "Random Forest")
+    st.metric("Status Model", "Ready" if train_button else "Idle")
+
+# ============================
+# 6. MAIN INTERFACE
 # ============================
 
-# Upload file
-uploaded_file = st.file_uploader("📂 Upload file Excel data usulan bantuan", type=["xlsx", "xls"])
+# Upload file dengan styling yang lebih baik
+st.markdown("### 📤 **Upload Data**")
+uploaded_file = st.file_uploader(
+    "Unggah file Excel data usulan bantuan sosial",
+    type=["xlsx", "xls"],
+    help="Format yang didukung: .xlsx, .xls",
+    label_visibility="collapsed"
+)
 
 if uploaded_file is not None:
     try:
-        # Baca file
-        df = pd.read_excel(uploaded_file)
-        
-        # Tampilkan semua data dalam container scrollable
-        st.subheader("📊 Data Lengkap Usulan Bantuan")
-        
-        # Container untuk tabel dengan tinggi tetap dan scroll
-        st.dataframe(df, use_container_width=True)
-        
-        st.caption(f"Total data: {len(df)} baris, {len(df.columns)} kolom")
-        
-        # Sidebar untuk pengaturan model
-        st.sidebar.header("⚙️ Pengaturan Model")
-        
-        # Parameter model
-        test_size = st.sidebar.slider("Ukuran Data Testing (%)", 10, 40, 20) / 100
-        n_estimators = st.sidebar.slider("Jumlah Pohon (n_estimators)", 50, 500, 100, 50)
-        max_depth = st.sidebar.slider("Kedalaman Maksimal (max_depth)", 3, 20, 7)
-        random_seed = st.sidebar.number_input("Random Seed", 1, 100, 42)
-        
-        # Tombol untuk training manual
-        train_button = st.sidebar.button("🚀 Train Model Sekarang", type="primary")
-        
-        # Proses data
-        with st.spinner("🔄 Memproses data..."):
-            df_clean = preprocess_data(df)
+        # Progress bar untuk feedback visual
+        with st.spinner("🔄 Memuat data..."):
+            progress_bar = st.progress(0)
             
-            # Tampilkan data yang sudah diproses
-            st.subheader("🏠 Data Setelah Preprocessing")
+            # Baca file
+            df = pd.read_excel(uploaded_file)
+            progress_bar.progress(30)
             
-            # Container untuk tabel data yang diproses
-            container_proses = st.dataframe(height=300)
-            with container_proses:
+            # Tampilkan preview data dengan tabs
+            st.markdown("### 📋 **Preview Data**")
+            
+            tab1, tab2, tab3 = st.tabs(["📊 Data Lengkap", "🔍 Contoh Data", "📈 Statistik"])
+            
+            with tab1:
+                st.dataframe(df, use_container_width=True, height=400)
+                st.caption(f"Total data: **{len(df)}** baris, **{len(df.columns)}** kolom")
+            
+            with tab2:
+                st.dataframe(df.head(10), use_container_width=True)
+                
+                # Info kolom
+                col_info = pd.DataFrame({
+                    'Kolom': df.columns,
+                    'Tipe Data': df.dtypes.values,
+                    'Non-Null': df.notna().sum().values,
+                    'Null': df.isna().sum().values
+                })
+                st.dataframe(col_info, use_container_width=True)
+            
+            with tab3:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Data", len(df))
+                with col2:
+                    st.metric("Total Kolom", len(df.columns))
+                with col3:
+                    if 'Klaster' in df.columns:
+                        unique_clusters = df['Klaster'].nunique()
+                        st.metric("Jumlah Klaster", unique_clusters)
+                    else:
+                        st.metric("Jumlah Klaster", "N/A")
+                
+                # Distribusi klaster
+                if 'Klaster' in df.columns:
+                    st.markdown("#### 📊 Distribusi Klaster")
+                    cluster_dist = df['Klaster'].value_counts()
+                    st.bar_chart(cluster_dist)
+            
+            progress_bar.progress(60)
+            
+            # Proses data
+            st.markdown("### 🔧 **Preprocessing Data**")
+            with st.expander("Detail Preprocessing", expanded=False):
+                df_clean = preprocess_data(df)
+                
+                # Tampilkan data yang sudah diproses
+                st.markdown("**Data Setelah Preprocessing:**")
                 address_cols = ['No', 'Nama', 'Kabupaten/Kota', 'Kecamatan', 'Desa/Kelurahan', 'Alamat Detail', 'Klaster', 'Usulan']
                 display_cols = [col for col in address_cols if col in df_clean.columns]
-                st.dataframe(df_clean[display_cols].head(20), use_container_width=True)
+                st.dataframe(df_clean[display_cols].head(10), use_container_width=True)
+                
+                # Persiapan fitur
+                st.markdown("**Fitur yang Dihasilkan:**")
+                X = prepare_features(df_clean)
+                st.write(f"Jumlah fitur: **{X.shape[1]}**")
+                st.dataframe(X.head(), use_container_width=True)
+                
+            progress_bar.progress(80)
             
-            # Persiapan fitur dan target
-            X = prepare_features(df_clean)
+            # Target simulasi
             y = create_simulation_target(df_clean, seed=random_seed)
             
-        # Training model (otomatis atau manual)
-        if train_button or not train_button:
-            with st.spinner("🤖 Melatih model Random Forest..."):
+            progress_bar.progress(100)
+            st.success("✅ Data berhasil diproses!")
+        
+        # Training model section
+        if train_button:
+            st.markdown("### 🤖 **Training Model**")
+            
+            # Show model parameters
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Preset", config_preset)
+            with col2:
+                st.metric("Testing Size", f"{test_size*100:.0f}%")
+            with col3:
+                st.metric("Jumlah Pohon", n_estimators)
+            with col4:
+                st.metric("Kedalaman", max_depth)
+            
+            with st.spinner("🎯 Melatih model Random Forest..."):
+                # Training animation
+                training_placeholder = st.empty()
+                training_placeholder.info("⏳ Model sedang dilatih...")
+                
                 model, accuracy, report, X_test, y_test, y_pred = train_model(
                     X, y, 
                     test_size=test_size,
@@ -245,22 +507,11 @@ if uploaded_file is not None:
                     max_depth=max_depth,
                     random_state=random_seed
                 )
+                
+                training_placeholder.success(f"✅ Model berhasil dilatih dengan akurasi: **{accuracy:.2%}**")
             
-            st.success(f"✅ Hasil Model Telah Dilatih!")
-            
-            # Tampilkan metrics
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Akurasi", f"{accuracy:.2%}")
-            with col2:
-                precision = report['weighted avg']['precision']
-                st.metric("Precision", f"{precision:.2%}")
-            with col3:
-                recall = report['weighted avg']['recall']
-                st.metric("Recall", f"{recall:.2%}")
-            with col4:
-                f1 = report['weighted avg']['f1-score']
-                st.metric("F1-Score", f"{f1:.2%}")
+            # Hasil prediksi
+            st.markdown("### 📊 **Hasil Prediksi**")
             
             # Prediksi untuk semua data
             predictions = model.predict(X)
@@ -275,24 +526,71 @@ if uploaded_file is not None:
             belum_count = (predictions == 0).sum()
             sudah_count = (predictions == 1).sum()
             
-            # Tampilkan hasil prediksi
-            st.subheader("📋 Hasil Prediksi Semua Data")
+            # Metrics cards
+            st.markdown("#### 📈 **Metrics Model**")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Akurasi", f"{accuracy:.2%}")
+            with col2:
+                precision = report['weighted avg']['precision']
+                st.metric("Precision", f"{precision:.2%}")
+            with col3:
+                recall = report['weighted avg']['recall']
+                st.metric("Recall", f"{recall:.2%}")
+            with col4:
+                f1 = report['weighted avg']['f1-score']
+                st.metric("F1-Score", f"{f1:.2%}")
             
-            # Container untuk hasil prediksi
-            container_prediksi = st.dataframe(height=400)
-            with container_prediksi:
-                result_cols = ['No', 'Nama', 'Klaster', 'Kecamatan', 'Desa/Kelurahan', 
-                             'Status', 'Probabilitas_Belum']
-                result_cols = [col for col in result_cols if col in df_clean.columns]
+            # Visualisasi distribusi status
+            st.markdown("#### 📊 **Distribusi Status Prediksi**")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                import plotly.graph_objects as go
+                fig = go.Figure(data=[go.Pie(
+                    labels=['Belum Menerima', 'Sudah Menerima'],
+                    values=[belum_count, sudah_count],
+                    hole=.3,
+                    marker_colors=['#FF6B6B', '#4ECDC4']
+                )])
+                fig.update_layout(title="Persentase Status Bantuan")
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                # Bar chart per klaster
+                if 'Klaster' in df_clean.columns:
+                    status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
+                    st.bar_chart(status_by_cluster)
+            
+            # Tabel hasil prediksi dengan tabs
+            st.markdown("#### 📋 **Detail Prediksi**")
+            pred_tab1, pred_tab2 = st.tabs(["🎯 Prioritas Tertinggi", "📋 Semua Hasil"])
+            
+            with pred_tab1:
+                # Ambil 15 dengan probabilitas tertinggi untuk belum dapat
+                df_prioritas = df_clean.nlargest(15, 'Probabilitas_Belum')[['No', 'Nama', 'Klaster', 
+                                                                           'Kecamatan', 'Desa/Kelurahan', 
+                                                                           'Probabilitas_Belum', 'Status']].copy()
+                df_prioritas['Probabilitas_Belum'] = df_prioritas['Probabilitas_Belum'].apply(lambda x: f"{x:.1%}")
+                df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
+                st.dataframe(df_prioritas, use_container_width=True)
                 
-                # Urutkan berdasarkan probabilitas belum
-                df_display = df_clean[result_cols].sort_values('Probabilitas_Belum', ascending=False)
-                st.dataframe(df_display, use_container_width=True)
+                st.markdown("""
+                <div class="info-box">
+                💡 <strong>Keterangan:</strong> Data diurutkan berdasarkan probabilitas belum menerima bantuan tertinggi.
+                </div>
+                """, unsafe_allow_html=True)
             
-            # Analisis berdasarkan wilayah
-            st.subheader("📍 Analisis Berdasarkan Wilayah")
+            with pred_tab2:
+                st.dataframe(
+                    df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status', 'Probabilitas_Belum']].sort_values('Probabilitas_Belum', ascending=False),
+                    use_container_width=True,
+                    height=400
+                )
             
-            if 'Kecamatan' in df_clean.columns and 'Status' in df_clean.columns:
+            # Analisis wilayah
+            st.markdown("#### 📍 **Analisis Berdasarkan Wilayah**")
+            if 'Kecamatan' in df_clean.columns:
                 wilayah_stats = df_clean.groupby('Kecamatan').agg(
                     Total=('Prediksi_Status', 'count'),
                     Sudah_Dapat=('Prediksi_Status', 'sum'),
@@ -302,185 +600,208 @@ if uploaded_file is not None:
                 wilayah_stats['Belum_Dapat'] = wilayah_stats['Total'] - wilayah_stats['Sudah_Dapat']
                 wilayah_stats['Persentase_Belum'] = (wilayah_stats['Belum_Dapat'] / wilayah_stats['Total'] * 100)
                 wilayah_stats['Persentase_Belum_Display'] = wilayah_stats['Persentase_Belum'].apply(lambda x: f"{x:.1f}%")
-                
-                # Format kolom
-                wilayah_stats['Sudah_Dapat'] = wilayah_stats['Sudah_Dapat'].astype(int)
-                wilayah_stats['Belum_Dapat'] = wilayah_stats['Belum_Dapat'].astype(int)
                 wilayah_stats['Rata_Rata_Probabilitas'] = wilayah_stats['Rata_Rata_Probabilitas'].apply(lambda x: f"{x:.2%}")
                 
-                # Tampilkan tabel
-                display_cols = ['Kecamatan', 'Total', 'Sudah_Dapat', 'Belum_Dapat', 
-                              'Persentase_Belum_Display', 'Rata_Rata_Probabilitas']
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.dataframe(wilayah_stats, use_container_width=True)
                 
-                # Urutkan berdasarkan persentase belum
-                wilayah_stats_sorted = wilayah_stats.sort_values('Persentase_Belum', ascending=False)
-                
-                st.dataframe(wilayah_stats_sorted[display_cols], use_container_width=True)
+                with col2:
+                    # Top 5 kecamatan dengan persentase tertinggi belum dapat
+                    top_kecamatan = wilayah_stats.nlargest(5, 'Persentase_Belum')
+                    st.markdown("**Top 5 Kecamatan Prioritas:**")
+                    for idx, row in top_kecamatan.iterrows():
+                        st.progress(
+                            row['Persentase_Belum']/100,
+                            text=f"{row['Kecamatan']}: {row['Persentase_Belum']:.1f}% belum dapat"
+                        )
             
-            # Visualisasi Data
-            st.subheader("📊 Visualisasi Data")
-            
-            col1, col2 = st.columns(2)
+            # Download section dengan cards
+            st.markdown("### 💾 **Download Hasil**")
+            col1, col2, col3 = st.columns(3)
             
             with col1:
-                st.markdown("**Status Bantuan Sosial - Klaster**")
-                if 'Klaster' in df_clean.columns:
-                    klaster_chart = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
-                    
-                    # Transpose untuk label horizontal
-                    klaster_chart_t = klaster_chart.T
-                    st.bar_chart(klaster_chart_t)
-            
-            with col2:
-                st.markdown("**Status Bantuan Sosial - Kecamatan**")
-                if 'Kecamatan' in df_clean.columns:
-                    kecamatan_data = df_clean['Kecamatan'].value_counts().head(5)
-                    
-                    # Buat DataFrame untuk chart horizontal
-                    kecamatan_df = pd.DataFrame({
-                        'Kecamatan': kecamatan_data.index,
-                        'Jumlah': kecamatan_data.values
-                    })
-                    
-                    # Set index ke Kecamatan untuk chart horizontal
-                    kecamatan_df.set_index('Kecamatan', inplace=True)
-                    st.bar_chart(kecamatan_df)
-            
-            # Visualisasi tambahan
-            st.markdown("**Total Keseluruhan Status Data**")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                status_counts = df_clean['Status'].value_counts()
-                status_df = pd.DataFrame({
-                    'Status': status_counts.index,
-                    'Jumlah': status_counts.values
-                })
-                status_df.set_index('Status', inplace=True)
-                st.bar_chart(status_df)
-            
-            with col2:
-                # Pie chart untuk status
-                if 'Status' in df_clean.columns:
-                    fig = pd.DataFrame({
-                        'Status': df_clean['Status'].value_counts().index,
-                        'Jumlah': df_clean['Status'].value_counts().values
-                    }).set_index('Status')
-                    st.bar_chart(fig, use_container_width=True)
-            
-            # Rekomendasi Prioritas
-            st.subheader("🎯 Rekomendasi Prioritas Penerima Bantuan")
-            
-            if 'Probabilitas_Belum' in df_clean.columns:
-                # Ambil 10 dengan probabilitas tertinggi untuk belum dapat
-                df_prioritas = df_clean.nlargest(10, 'Probabilitas_Belum')[['No', 'Nama', 'Klaster', 
-                                                                           'Kecamatan', 'Desa/Kelurahan', 
-                                                                           'Probabilitas_Belum']].copy()
-                
-                df_prioritas['Probabilitas_Belum'] = df_prioritas['Probabilitas_Belum'].apply(lambda x: f"{x:.2%}")
-                
-                st.dataframe(df_prioritas, use_container_width=True)
-            
-            # Download hasil
-            st.subheader("💾 Download Hasil Analisis")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                # Download hasil prediksi
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 csv_all = df_clean.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 Download Semua Hasil Prediksi (CSV)",
+                    label="📥 **Semua Data**",
                     data=csv_all,
                     file_name="hasil_prediksi_lengkap.csv",
                     mime="text/csv",
+                    help="Download semua hasil prediksi"
                 )
+                st.caption("File CSV dengan semua hasil prediksi")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
-                # Download yang belum dapat
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
                 df_belum = df_clean[df_clean['Prediksi_Status'] == 0]
                 if len(df_belum) > 0:
                     csv_belum = df_belum.to_csv(index=False).encode('utf-8')
                     st.download_button(
-                        label="📥 Download Belum Dapat Bantuan (CSV)",
+                        label="🎯 **Belum Dapat**",
                         data=csv_belum,
                         file_name="keluarga_belum_dapat_bantuan.csv",
                         mime="text/csv",
+                        help="Download data yang diprediksi belum dapat bantuan"
                     )
+                    st.caption(f"{len(df_belum)} data belum dapat bantuan")
+                st.markdown('</div>', unsafe_allow_html=True)
             
-            # Informasi model
-            with st.expander("📊 Detail Model dan Evaluasi"):
-                st.markdown("**Classification Report:**")
-                st.json(report)
+            with col3:
+                st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+                df_sudah = df_clean[df_clean['Prediksi_Status'] == 1]
+                if len(df_sudah) > 0:
+                    csv_sudah = df_sudah.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label="✅ **Sudah Dapat**",
+                        data=csv_sudah,
+                        file_name="keluarga_sudah_dapat_bantuan.csv",
+                        mime="text/csv",
+                        help="Download data yang diprediksi sudah dapat bantuan"
+                    )
+                    st.caption(f"{len(df_sudah)} data sudah dapat bantuan")
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Model details expander
+            with st.expander("🔍 **Detail Model dan Evaluasi**", expanded=False):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**Parameter Model:**")
+                    st.write(f"- Preset: {config_preset}")
+                    st.write(f"- Jumlah pohon: {n_estimators}")
+                    st.write(f"- Kedalaman maksimal: {max_depth}")
+                    st.write(f"- Ukuran data testing: {test_size*100}%")
+                    st.write(f"- Random seed: {random_seed}")
+                    st.write(f"- Total fitur: {X.shape[1]}")
                 
-                st.markdown("**Parameter Model:**")
-                st.write(f"- Jumlah pohon: {n_estimators}")
-                st.write(f"- Kedalaman maksimal: {max_depth}")
-                st.write(f"- Ukuran data testing: {test_size*100}%")
-                st.write(f"- Random seed: {random_seed}")
+                with col2:
+                    st.markdown("**Classification Report:**")
+                    report_df = pd.DataFrame(report).transpose()
+                    st.dataframe(report_df, use_container_width=True)
         
-        # Catatan penting
-        st.info("""
-        **ℹ️ Informasi Penting:**
-        1. **Training Model**: Gunakan sidebar untuk mengatur parameter dan klik "Train Model Sekarang"
-        2. **Data Target**: Dibuat secara simulasi untuk demonstrasi
-        3. **Scrollable Tables**: Semua tabel dapat di-scroll untuk melihat data lengkap
-        4. **Persentase**: Ditampilkan dengan format % pada analisis wilayah
-        5. **Visualisasi**: Label ditampilkan secara horizontal untuk kemudahan membaca
-        """)
+        else:
+            st.markdown("""
+            <div class="info-box">
+            💡 <strong>Tips:</strong> Klik tombol <strong>"🚀 Train Model Sekarang"</strong> di sidebar untuk memulai training model.
+            </div>
+            """, unsafe_allow_html=True)
         
+        # Footer dengan timestamp
+        st.markdown("---")
+        current_time = datetime.datetime.now().strftime("%d %B %Y, %H:%M:%S")
+        left, center, right = st.columns([1, 2, 1])
+        with center:
+            st.markdown(f"""
+            <div style="text-align: center; color: #666; font-size: 12px; padding: 20px;">
+                <p style="margin: 0;">
+                    © 2024 • <strong>Kelompok 11</strong> • Random Forest Algorithm • 
+                    <span style="color: #888;">Generated: {current_time}</span>
+                </p>
+                <p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">
+                    Aplikasi Prediksi Penerima Bantuan Sosial v1.0 • 
+                    <span style="color: #4CAF50;">🟢 Ready</span>
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+    
     except Exception as e:
-        st.error(f"❌ Terjadi kesalahan: {str(e)}")
-        st.write("Pastikan file Excel memiliki format yang sesuai.")
+        st.error(f"""
+        ❌ **Terjadi Kesalahan**
+        
+        ```python
+        {str(e)}
+        ```
+        
+        Pastikan file Excel memiliki format yang sesuai dengan template.
+        """)
+        st.markdown("""
+        <div class="warning-box">
+        🔧 **Solusi:** 
+        1. Pastikan file berformat .xlsx atau .xls
+        2. Pastikan kolom yang diperlukan ada (Nama, Klaster, dll)
+        3. Periksa apakah ada karakter khusus yang tidak didukung
+        </div>
+        """, unsafe_allow_html=True)
 
 else:
-    # Tampilkan panduan
+    # Landing page yang informatif
     st.markdown("""
-    ## 📋 Panduan Penggunaan
+    <div class="info-box">
+    📋 <strong>Selamat datang di Sistem Prediksi Bantuan Sosial!</strong><br>
+    Unggah file Excel untuk mulai menganalisis data penerima bantuan sosial.
+    </div>
+    """, unsafe_allow_html=True)
     
-    ### 1. **Persiapkan Data**
-    Siapkan file Excel dengan format:
+    col1, col2 = st.columns(2)
     
-    | No | Nama | NIK | No KK  | Kabupaten/Kota | Kecamatan | Desa/Kelurahan | Alamat Detail | Klaster | Usulan |
-    |----|------|-----|--------|----------------|-----------|----------------|---------------|---------|--------|   
+    with col1:
+        st.markdown("### 📥 **Cara Menggunakan**")
+        st.markdown("""
+        1. **Siapkan data** dalam format Excel
+        2. **Unggah file** menggunakan menu di atas
+        3. **Atur parameter** model di sidebar
+        4. **Klik "Train Model"** untuk memulai analisis
+        5. **Download hasil** untuk laporan
+        """)
+        
+        st.markdown("### 🎯 **Fitur Utama**")
+        st.markdown("""
+        - 🤖 **Prediksi otomatis** menggunakan Random Forest
+        - 📊 **Visualisasi interaktif** hasil prediksi
+        - 📍 **Analisis per wilayah** (kecamatan/desa)
+        - 📥 **Ekspor data** dalam format CSV
+        - ⚙️ **Multiple presets** untuk kebutuhan berbeda
+        """)
     
-    ### 2. **Upload Data**
-    Gunakan menu upload di atas untuk mengirim file Excel.
+    with col2:
+        st.markdown("### 📁 **Format Data yang Didukung**")
+        
+        # Contoh format data
+        example_data = {
+            'No': [1, 2, 3],
+            'Nama': ['Hairiah', 'Rahmat Al Khoirul', 'Diyon'],
+            'NIK': ['3216064304680020', '3216061201150013', '3212232911030003'],
+            'No KK': ['3216061111100180', '3216060603230030', '3212230206099955'],
+            'Kabupaten/Kota': ['Bekasi', 'Bekasi', 'Bekasi'],
+            'Kecamatan': ['Tambun Selatan', 'Tambun Selatan', 'Cibitung'],
+            'Desa/Kelurahan': ['Sumber Jaya', 'Sumber Jaya', 'Wanasari'],
+            'Alamat Detail': ['Kp. Pulo Rt 001 Rw 035', 'Kp. Pulo Rt 001 Rw 036', 'Bekasi Regensi I Rt 004 Rw 005'],
+            'Klaster': ['Lansia', 'Anak', 'Anak'],
+            'Usulan': ['Kebutuhan Lansia', 'ATK, Kebutuhan Pendidikan', 'ATK, Kebutuhan Pendidikan']
+        }
+        
+        st.dataframe(pd.DataFrame(example_data), use_container_width=True)
+        
+        st.markdown("""
+        <div class="warning-box">
+        ⚠️ <strong>Perhatian:</strong> Kolom <strong>Klaster</strong> harus ada dalam data.
+        </div>
+        """, unsafe_allow_html=True)
     
-    ### 3. **Atur Model (Opsional)**
-    Gunakan sidebar untuk mengatur parameter model:
-    - Ukuran data testing
-    - Jumlah pohon keputusan
-    - Kedalaman maksimal
-    - Random seed
+    # Quick start guide
+    st.markdown("---")
+    st.markdown("### ⚡ **Quick Start**")
     
-    ### ✨ Fitur Baru:
-    - **Tabel Scrollable**: Semua data ditampilkan dalam tabel yang bisa di-scroll
-    - **Training Manual**: Kontrol penuh atas parameter model
-    - **Format Persen**: Persentase ditampilkan dengan simbol %
-    - **Visualisasi Horizontal**: Label lebih mudah dibaca
-    """)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("📁 Format", "Excel (.xlsx)")
+    with col2:
+        st.metric("🤖 Algoritma", "Random Forest")
+    with col3:
+        st.metric("⚡ Kecepatan", "< 30 detik")
     
-    # Contoh data
-    example_data = {
-        'No': [1, 2, 3],
-        'Nama': ['Hairiah', 'Rahmat Al Khoirul', 'Diyon'],
-        'NIK': ['3216064304680020', '3216061201150013', '3212232911030003'],
-        'No KK': ['3216061111100180', '3216060603230030', '3212230206099955'],
-        'Kabupaten/Kota': ['Bekasi', 'Bekasi', 'Bekasi'],
-        'Kecamatan': ['Tambun Selatan', 'Tambun Selatan', 'Cibitung'],
-        'Desa/Kelurahan': ['Sumber Jaya', 'Sumber Jaya', 'Wanasari'],
-        'Alamat Detail': ['Kp. Pulo Rt 001 Rw 035', 'Kp. Pulo Rt 001 Rw 036', 'Bekasi Regensi I Rt 004 Rw 005'],
-        'Klaster': ['Lansia', 'Anak', 'Anak'],
-        'Usulan': ['Kebutuhan Lansia', 'ATK, Kebutuhan Pendidikan', 'ATK, Kebutuhan Pendidikan']
-    }
-    
-    st.dataframe(pd.DataFrame(example_data), use_container_width=True)
+    # Footer landing page
     st.markdown("---")
     left, center, right = st.columns([1, 2, 1])
     with center:
-        st.markdown(
-        "<div style='text-align: center; color: #666; font-size: 12px;'>"
-        "© 2024 - Developed by Kelompok 11 (Random Forest)"
-        "</div>", 
-        unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; color: #888; font-size: 12px; padding: 20px;">
+            <p style="margin: 0;">
+                <strong>🏛️ DINAS SOSIAL</strong> • Sistem Prediksi Berbasis Machine Learning
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 11px;">
+                Developed by <strong>Kelompok 11</strong> • © 2024 • v1.0
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
