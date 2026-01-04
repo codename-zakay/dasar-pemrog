@@ -374,6 +374,36 @@ if uploaded_file is not None:
             df = pd.read_excel(uploaded_file)
             progress_bar.progress(30)
             
+            # Hapus baris yang SEMUA kolomnya berisi 'None', NaN, atau string kosong
+            def clean_dataframe(df):
+                df_clean = df.copy()
+                
+                # 1. Hapus baris yang semua kolomnya NaN
+                df_clean = df_clean.dropna(how='all')
+                
+                # 2. Hapus baris yang semua kolomnya string kosong
+                empty_mask = df_clean.applymap(lambda x: str(x).strip() == '').all(axis=1)
+                df_clean = df_clean[~empty_mask]
+                
+                # 3. Hapus baris yang semua kolomnya 'None' (case insensitive)
+                none_mask = df_clean.applymap(lambda x: str(x).strip().lower() == 'none').all(axis=1)
+                df_clean = df_clean[~none_mask]
+                
+                # 4. Hapus baris yang semua kolomnya 'null' atau 'nan'
+                null_mask = df_clean.applymap(lambda x: str(x).strip().lower() in ['null', 'nan']).all(axis=1)
+                df_clean = df_clean[~null_mask]
+                
+                # 5. Reset index dan mulai dari 1 untuk kolom 'No'
+                df_clean = df_clean.reset_index(drop=True)
+                
+                # Jika ada kolom 'No', update nomor urut
+                if 'No' in df_clean.columns:
+                    df_clean['No'] = range(1, len(df_clean) + 1)
+                
+                return df_clean
+
+            # Gunakan fungsi cleaning
+            df = clean_dataframe(df)
             # Tampilkan preview data dengan tabs
             st.markdown("### 📋 **Preview Data**")
             
@@ -551,7 +581,8 @@ if uploaded_file is not None:
                 st.dataframe(
                     display_df,
                     use_container_width=True,
-                    height=400
+                    height=400,
+                    hide_index=True
                 )
             
             
