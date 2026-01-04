@@ -220,9 +220,7 @@ def prepare_features(df):
     
     return df_features[feature_cols]
 
-# ============================
 # 3. FUNGSI UNTUK MEMBUAT DATA SIMULASI TARGET
-# ============================
 def create_simulation_target(df, seed=42):
     np.random.seed(seed)
     
@@ -562,7 +560,7 @@ if uploaded_file is not None:
             
             with pred_tab2:
                 st.dataframe(
-                    df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status', 'Probabilitas_Belum']].sort_values('Probabilitas_Belum', ascending=False),
+                    df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']],
                     use_container_width=True,
                     height=400
                 )
