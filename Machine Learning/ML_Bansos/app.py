@@ -490,7 +490,7 @@ if uploaded_file is not None:
             
             # Metrics cards
             st.markdown("#### 📈 **Metrics Model**")
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3, = st.columns(3)
             with col1:
                 st.metric("Akurasi", f"{accuracy:.2%}")
             with col2:
@@ -499,10 +499,7 @@ if uploaded_file is not None:
             with col3:
                 recall = report['weighted avg']['recall']
                 st.metric("Recall", f"{recall:.2%}")
-            with col4:
-                f1 = report['weighted avg']['f1-score']
-                st.metric("F1-Score", f"{f1:.2%}")
-            
+    
             # Visualisasi distribusi status
             st.markdown("#### 📊 **Distribusi Status Prediksi**")
             col1, col2 = st.columns(2)
