@@ -554,10 +554,16 @@ if uploaded_file is not None:
             with col2:
                 # Bar chart per klaster
                 if 'Klaster' in df_clean.columns:
-                    df_clean['Klaster'] = df_clean['Klaster'].apply(lambda x: f"*{x}*")
-                    status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
-                    st.bar_chart(status_by_cluster)
-            
+                    status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().reset_index(name='Jumlah')
+                    status_by_cluster['Klaster_Formatted'] = status_by_cluster['Klaster'].apply(lambda x: f"*{x}*")
+                    
+                    chart = alt.Chart(status_by_cluster).mark_bar().encode(
+                        x=alt.X('Klaster:N', title='Klaster', 
+                        axis=alt.Axis(labelExpr="'*' + datum.value + '*'")),
+                        y=alt.Y('Jumlah:Q', title='Jumlah'),
+                        color='Status:N', tooltip=['Klaster', 'Status', 'Jumlah'])
+                    st.altair_chart(chart, use_container_width=True)
+                    
             # Tabel hasil prediksi dengan tabs
             st.markdown("#### 📋 **Detail Prediksi**")
             pred_tab1, pred_tab2 = st.tabs(["🎯 Prioritas Tertinggi", "📋 Semua Hasil"])
@@ -767,7 +773,7 @@ else:
             'Usulan': ['Kebutuhan Lansia', 'ATK, Kebutuhan Pendidikan', 'ATK, Kebutuhan Pendidikan']
         }
         
-        st.dataframe(pd.DataFrame(example_data), use_container_width=True)
+        st.dataframe(pd.DataFrame(example_data), use_container_width=True, hide_index=True)
         
         st.markdown("""
         <div class="warning-box">
