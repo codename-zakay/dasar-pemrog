@@ -545,10 +545,9 @@ if uploaded_file is not None:
             
             with pred_tab1:
                 # Ambil 15 dengan probabilitas tertinggi untuk belum dapat
-                df_prioritas = df_clean.nlargest(15, 'Probabilitas_Belum')[['No', 'Nama', 'Klaster', 
-                                                                           'Kecamatan', 'Desa/Kelurahan', 
-                                                                           'Probabilitas_Belum', 'Status']].copy()
-                df_prioritas['Probabilitas_Belum'] = df_prioritas['Probabilitas_Belum'].apply(lambda x: f"{x:.1%}")
+                df_prioritas = df_clean.nlargest(15)[['No', 'Nama', 'Klaster',
+                                                    'Kecamatan', 'Desa/Kelurahan',
+                                                    'Status']].copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 st.dataframe(df_prioritas, use_container_width=True)
                 
