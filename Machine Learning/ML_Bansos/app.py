@@ -377,15 +377,12 @@ if uploaded_file is not None:
             # Tampilkan preview data dengan tabs
             st.markdown("### 📋 **Preview Data**")
             
-            tab1, tab2, tab3 = st.tabs(["📊 Data Lengkap", "🔍 Contoh Data", "📈 Statistik"])
+            tab1, tab2, tab3 = st.tabs(["📊 Data Lengkap", "📈 Statistik"])
             
             with tab1:
                 st.dataframe(df, use_container_width=True, height=400)
                 st.caption(f"Total data: **{len(df)}** baris, **{len(df.columns)}** kolom")
-            
-            with tab2:
-                st.dataframe(df.head(10), use_container_width=True)
-            
+                
             with tab3:
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -469,6 +466,10 @@ if uploaded_file is not None:
             df_clean['Prediksi_Status'] = predictions
             df_clean['Status'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'}) 
             
+            # Prediksi Status
+            df_clean['Prediksi_Status'] = predictions
+            df_clean['Status'] = df_clean['Prediksi_Status'].map({1: 'Sudah', 0: 'Belum'})
+            
             # Statistik
             belum_count = (predictions == 0).sum()
             sudah_count = (predictions == 1).sum()
@@ -531,9 +532,8 @@ if uploaded_file is not None:
             pred_tab1, pred_tab2 = st.tabs(["🎯 Prioritas Tertinggi", "📋 Semua Hasil"])
             
             with pred_tab1:
-                df_prioritas = df_clean.nlargest(15)[['No', 'Nama', 'Klaster', 
-                                                    'Kecamatan', 'Desa/Kelurahan', 
-                                                    'Probabilitas_Belum', 'Status']].copy()
+                df_prioritas = df_clean[df_clean['Status'] == 'Belum'][['No', 'Nama', 'Klaster', 
+                                                                        'Kecamatan', 'Desa/Kelurahan', 'Status']].head(15).copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 
                 st.dataframe(df_prioritas, use_container_width=True)
@@ -546,6 +546,7 @@ if uploaded_file is not None:
             
             with pred_tab2:
                 display_df = df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']].copy()
+                display_df = display_df.sort_values('Status', ascending=True)
                 
                 st.dataframe(
                     display_df,
@@ -559,14 +560,12 @@ if uploaded_file is not None:
             if 'Kecamatan' in df_clean.columns:
                 wilayah_stats = df_clean.groupby('Kecamatan').agg(
                     Total=('Prediksi_Status', 'count'),
-                    Sudah_Dapat=('Prediksi_Status', 'sum'),
-                    Rata_Rata_Probabilitas=('Probabilitas_Belum', 'mean')
+                    Sudah_Dapat=('Prediksi_Status', 'sum')
                 ).reset_index()
                 
                 wilayah_stats['Belum_Dapat'] = wilayah_stats['Total'] - wilayah_stats['Sudah_Dapat']
                 wilayah_stats['Persentase_Belum'] = (wilayah_stats['Belum_Dapat'] / wilayah_stats['Total'] * 100)
                 wilayah_stats['Persentase_Belum_Display'] = wilayah_stats['Persentase_Belum'].apply(lambda x: f"{x:.1f}%")
-                wilayah_stats['Rata_Rata_Probabilitas'] = wilayah_stats['Rata_Rata_Probabilitas'].apply(lambda x: f"{x:.2%}")
                 
                 col1, col2 = st.columns(2)
                 with col1:
@@ -750,11 +749,11 @@ else:
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(" Format", "Excel (.xlsx)")
+        st.metric("Format", "Excel (.xlsx)")
     with col2:
-        st.metric(" Algoritma", "Random Forest")
+        st.metric("Algoritma", "Random Forest")
     with col3:
-        st.metric(" Kecepatan", "< 30 detik")
+        st.metric("Kecepatan", "< 30 detik")
     
     # Footer landing page
     st.markdown("---")
