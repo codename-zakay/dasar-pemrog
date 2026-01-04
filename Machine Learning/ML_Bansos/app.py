@@ -554,6 +554,7 @@ if uploaded_file is not None:
             with col2:
                 # Bar chart per klaster
                 if 'Klaster' in df_clean.columns:
+                    df_clean['Klaster'] = df_clean['Klaster'].apply(lambda x: f"*{x}*")
                     status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().unstack(fill_value=0)
                     st.bar_chart(status_by_cluster)
             
