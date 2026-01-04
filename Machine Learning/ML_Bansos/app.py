@@ -554,15 +554,21 @@ if uploaded_file is not None:
             with col2:
                 # Bar chart per klaster
                 if 'Klaster' in df_clean.columns:
-                    status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().reset_index(name='Jumlah')
-                    status_by_cluster['Klaster_Formatted'] = status_by_cluster['Klaster'].apply(lambda x: f"*{x}*")
+                    def format_italic(text):
+                        if pd.isna(text):
+                            return text
+                        if str(text).strip() in ['Lansia', 'Anak']:
+                            return f"*{text}*"
+                        return text
+                    df_display = df_clean.copy()
+                    df_display['Klaster'] = df_display['Klaster'].apply(format_italic)
                     
-                    chart = alt.Chart(status_by_cluster).mark_bar().encode(
+                    chart = alt.Chart(df_display).mark_bar().encode(
                         x=alt.X('Klaster:N', title='Klaster', 
                         axis=alt.Axis(labelExpr="'*' + datum.value + '*'")),
                         y=alt.Y('Jumlah:Q', title='Jumlah'),
                         color='Status:N', tooltip=['Klaster', 'Status', 'Jumlah'])
-                    st.altair_chart(chart, use_container_width=True)
+                    st.altair_chart(chart, use_container_width=True, hide_index=True)
                     
             # Tabel hasil prediksi dengan tabs
             st.markdown("#### 📋 **Detail Prediksi**")
