@@ -531,10 +531,9 @@ if uploaded_file is not None:
             pred_tab1, pred_tab2 = st.tabs(["🎯 Prioritas Tertinggi", "📋 Semua Hasil"])
             
             with pred_tab1:
-                df_prioritas = df_clean.nlargest(15, 'Probabilitas_Belum')[['No', 'Nama', 'Klaster', 
-                                                                           'Kecamatan', 'Desa/Kelurahan', 
-                                                                           'Probabilitas_Belum', 'Status']].copy()
-                df_prioritas['Probabilitas_Belum'] = df_prioritas['Probabilitas_Belum'].apply(lambda x: f"{x:.1%}")
+                df_prioritas = df_clean.nlargest(15)[['No', 'Nama', 'Klaster', 
+                                                    'Kecamatan', 'Desa/Kelurahan', 
+                                                    'Probabilitas_Belum', 'Status']].copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 
                 st.dataframe(df_prioritas, use_container_width=True)
@@ -546,9 +545,7 @@ if uploaded_file is not None:
                 """, unsafe_allow_html=True)
             
             with pred_tab2:
-                display_df = df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status', 'Probabilitas_Belum']].copy()
-                display_df['Probabilitas_Belum'] = display_df['Probabilitas_Belum'].apply(lambda x: f"{x:.1%}")
-                display_df = display_df.sort_values('Probabilitas_Belum', ascending=False)
+                display_df = df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']].copy()
                 
                 st.dataframe(
                     display_df,
