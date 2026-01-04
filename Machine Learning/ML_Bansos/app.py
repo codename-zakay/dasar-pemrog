@@ -352,8 +352,8 @@ with st.sidebar:
     
     # Quick stats di sidebar
     st.markdown("### 📊 **Info Cepat**")
-    st.metric("Algoritma", "### **Random Forest**")
-    st.metric("Status Model", "### **Ready**" if train_button else "Idle")
+    st.metric("Algoritma", "Random Forest")
+    st.metric("Status Model", "Ready" if train_button else "Idle")
 
 # 6. MAIN INTERFACE
 st.markdown("### 📤 **Upload Data**")
@@ -434,7 +434,7 @@ if uploaded_file is not None:
         
         # Training model section
         if train_button:
-            st.markdown("### 🤖 **Training Model**")
+            st.markdown("### **Training Model**")
             
             # Show model parameters
             col1, col2, col3, col4 = st.columns(4)
@@ -545,7 +545,7 @@ if uploaded_file is not None:
             
             with pred_tab2:
                 st.dataframe(
-                    df_clean[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']],
+                    df_clean.columns[['No', 'Nama', 'Klaster', 'Kecamatan', 'Status']],
                     use_container_width=True,
                     height=400
                 )
