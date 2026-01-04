@@ -477,6 +477,10 @@ else:
     
     st.dataframe(pd.DataFrame(example_data), use_container_width=True)
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 2, 1])  # Buat 3 kolom: kiri-kosong, tengah, kanan-kosong
-    with col2:  # Gunakan kolom tengah
-        st.caption("© 2024 - Developed by Kelompok 11 (Random Forest)")
+    left, center, right = st.columns([1, 2, 1])
+    with center:
+        st.markdown(
+        "<div style='text-align: center; color: #666; font-size: 12px;'>"
+        "© 2024 - Developed by Kelompok 11 (Random Forest)"
+        "</div>", 
+        unsafe_allow_html=True)
