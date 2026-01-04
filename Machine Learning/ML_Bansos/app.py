@@ -377,13 +377,13 @@ if uploaded_file is not None:
             # Tampilkan preview data dengan tabs
             st.markdown("### 📋 **Preview Data**")
             
-            tab1, tab2, tab3 = st.tabs(["📊 Data Lengkap", "📈 Statistik"])
+            tab1, tab2 = st.tabs(["📊 Data Lengkap", "📈 Statistik"])
             
             with tab1:
                 st.dataframe(df, use_container_width=True, height=400)
                 st.caption(f"Total data: **{len(df)}** baris, **{len(df.columns)}** kolom")
                 
-            with tab3:
+            with tab2:
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Total Data", len(df))
