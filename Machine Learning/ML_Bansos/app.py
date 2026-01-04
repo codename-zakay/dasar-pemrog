@@ -380,7 +380,7 @@ if uploaded_file is not None:
             tab1, tab2 = st.tabs(["📊 Data Lengkap", "📈 Statistik"])
             
             with tab1:
-                st.dataframe(df, use_container_width=True, height=400)
+                st.dataframe(df, use_container_width=True, height=400, hide_index=True)
                 st.caption(f"Total data: **{len(df)}** baris, **{len(df.columns)}** kolom")
                 
             with tab2:
