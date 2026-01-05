@@ -683,7 +683,7 @@ if uploaded_file is not None:
                 if len(df_belum) > 0:
                     csv_belum = df_belum.to_csv(index=False).encode('utf-8')
                     st.download_button(
-                        label="🎯 **Belum Dapat**",
+                        label="❎ **Belum Dapat**",
                         data=csv_belum,
                         file_name="keluarga_belum_dapat_bantuan.csv",
                         mime="text/csv",
