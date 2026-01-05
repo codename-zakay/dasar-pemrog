@@ -525,12 +525,12 @@ if uploaded_file is not None:
                 status_data = pd.DataFrame({
                     'Status': ['Belum Menerima', 'Sudah Menerima'],
                     'Jumlah': [belum_count, sudah_count],
-                    'Warna': ['#FF6B6B', '#4ECDC4']
+                    'Warna': ['#FF0000', '#08CB00']
                 })
                 
                 base = alt.Chart(status_data).encode(
                     theta=alt.Theta("Jumlah:Q", stack=True),
-                    color=alt.Color("Status:N", scale=alt.Scale(range=['#FF6B6B', '#4ECDC4']), legend=None),
+                    color=alt.Color("Status:N", scale=alt.Scale(range=['#FF0000', '#08CB00']), legend=None),
                     tooltip=['Status', 'Jumlah']
                 )
                 
@@ -646,11 +646,11 @@ if uploaded_file is not None:
                             })
                             
                     chart = alt.Chart(chart_data).mark_bar().encode(
-                                x=alt.X('Kecamatan:N', title='Kecamatan', sort='-y'),
+                                x=alt.X('Kecamatan:N', title='Kecamatan', sort='x'),
                                 y=alt.Y('Jumlah:Q', title='Jumlah Keluarga'),
                                 color=alt.Color('Status:N', scale=alt.Scale(
                                     domain=['Sudah Dapat', 'Belum Dapat'],
-                                    range=['#4CAF50', '#FF6B6B']
+                                    range=['#08CB00', '#FF0000']
                                 )),
                                 tooltip=['Kecamatan', 'Status', 'Jumlah']
                             ).properties(
