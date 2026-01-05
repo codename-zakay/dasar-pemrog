@@ -285,7 +285,10 @@ with st.sidebar:
     st.markdown("#### 🎯 **Preset Model**")
     config_preset = st.radio(
         "Pilih preset model:",
-        ["Fast", "Balanced", "Accurate", "Custom"],
+        ["Fast",
+         "Balanced",
+         "Accurate",
+         "Custom"],
         index=1,
         label_visibility="collapsed"
     )
@@ -579,7 +582,9 @@ if uploaded_file is not None:
                                                                         'Kecamatan', 'Desa/Kelurahan', 'Status']].head(15).copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 
-                st.dataframe(df_prioritas, use_container_width=True, hide_index=True)
+                st.dataframe(df_prioritas,
+                             use_container_width=True,
+                             hide_index=True)
                 
                 st.markdown("""
                 <div class="info-box">
@@ -613,7 +618,9 @@ if uploaded_file is not None:
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.dataframe(wilayah_stats, use_container_width=True, hide_index=True)
+                    st.dataframe(wilayah_stats,
+                                 use_container_width=True,
+                                 hide_index=True)
                 
                 with col2:
                     # Top 5 kecamatan dengan persentase tertinggi belum dapat
