@@ -608,12 +608,26 @@ if uploaded_file is not None:
                 ).reset_index()
                 
                 wilayah_stats['Belum_Dapat'] = wilayah_stats['Total'] - wilayah_stats['Sudah_Dapat']
-                wilayah_stats['Persentase_Belum'] = (wilayah_stats['Belum_Dapat'] / wilayah_stats['Total'] * 100)
-                wilayah_stats['Persentase_Belum_Display'] = wilayah_stats['Persentase_Belum'].apply(lambda x: f"{x:.1f}%")
+                
+                wilayah_stats = wilayah_stats.sort_values('Belum_Dapat', ascending=False)
+                
+                wilayah_stats['Total'] = wilayah_stats['Total'].astype(int)
+                wilayah_stats['Sudah_Dapat'] = wilayah_stats['Sudah_Dapat'].astype(int)
+                wilayah_stats['Belum_Dapat'] = wilayah_stats['Belum_Dapat'].astype(int)
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.dataframe(wilayah_stats, use_container_width=True, hide_index=True)
+                    st.dataframe(
+                                wilayah_stats,
+                                use_container_width=True,
+                                hide_index=True,
+                                column_config={
+                                    "Kecamatan": "Kecamatan",
+                                    "Total": st.column_config.NumberColumn("Total Keluarga", format="%d"),
+                                    "Sudah_Dapat": st.column_config.NumberColumn("Sudah Dapat", format="%d"),
+                                    "Belum_Dapat": st.column_config.NumberColumn("Belum Dapat", format="%d")
+                                    }
+                                )
                 
                 with col2:
                     # Top 5 kecamatan dengan persentase tertinggi belum dapat
