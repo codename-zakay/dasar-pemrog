@@ -631,7 +631,7 @@ if uploaded_file is not None:
                 
                 with col2:
                     # Top 5 kecamatan dengan persentase tertinggi belum dapat
-                    top_kecamatan = wilayah_stats.nlargest(5, 'Persentase_Belum')
+                    top_kecamatan = wilayah_stats.nlargest(5).copy()
                     st.markdown("**Top 5 Kecamatan Prioritas:**")
                     for idx, row in top_kecamatan.iterrows():
                         st.progress(
