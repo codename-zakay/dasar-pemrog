@@ -631,13 +631,34 @@ if uploaded_file is not None:
                 
                 with col2:
                     # Top 5 kecamatan dengan persentase tertinggi belum dapat
-                    top_kecamatan = wilayah_stats.nlargest(5).copy()
+                    top_kecamatan = wilayah_stats.head(5).copy()
                     st.markdown("**Top 5 Kecamatan Prioritas:**")
-                    for idx, row in top_kecamatan.iterrows():
-                        st.progress(
-                            row['Persentase_Belum']/100,
-                            text=f"{row['Kecamatan']}: {row['Persentase_Belum']:.1f}% belum dapat"
-                        )
+                    chart_data = top_kecamatan.melt(
+                                id_vars=['Kecamatan'],
+                                value_vars=['Sudah_Dapat', 'Belum_Dapat'],
+                                var_name='Status',
+                                value_name='Jumlah'
+                            )
+                            
+                    chart_data['Status'] = chart_data['Status'].map({
+                                'Sudah_Dapat': 'Sudah Dapat',
+                                'Belum_Dapat': 'Belum Dapat'
+                            })
+                            
+                    chart = alt.Chart(chart_data).mark_bar().encode(
+                                x=alt.X('Kecamatan:N', title='Kecamatan', sort='-y'),
+                                y=alt.Y('Jumlah:Q', title='Jumlah Keluarga'),
+                                color=alt.Color('Status:N', scale=alt.Scale(
+                                    domain=['Sudah Dapat', 'Belum Dapat'],
+                                    range=['#4CAF50', '#FF6B6B']
+                                )),
+                                tooltip=['Kecamatan', 'Status', 'Jumlah']
+                            ).properties(
+                                height=300,
+                                title='Distribusi Status Bantuan per Kecamatan (Top 5)'
+                            )
+                            
+                    st.altair_chart(chart, use_container_width=True)
             
             # Download section dengan cards
             st.markdown("### 💾 **Download Hasil**")
