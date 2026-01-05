@@ -568,7 +568,7 @@ if uploaded_file is not None:
                         axis=alt.Axis(labelExpr="'*' + datum.value + '*'")),
                         y=alt.Y('Jumlah:Q', title='Jumlah'),
                         color='Status:N', tooltip=['Klaster', 'Status', 'Jumlah'])
-                    st.altair_chart(chart, use_container_width=True, hide_index=True)
+                    st.altair_chart(chart, use_container_width=True)
                     
             # Tabel hasil prediksi dengan tabs
             st.markdown("#### 📋 **Detail Prediksi**")
