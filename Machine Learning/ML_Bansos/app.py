@@ -285,10 +285,7 @@ with st.sidebar:
     st.markdown("#### 🎯 **Preset Model**")
     config_preset = st.radio(
         "Pilih preset model:",
-        ["Fast",
-         "Balanced",
-         "Accurate",
-         "Custom"],
+        ["Fast", "Balanced", "Accurate", "Custom"],
         index=1,
         label_visibility="collapsed"
     )
@@ -563,10 +560,10 @@ if uploaded_file is not None:
                         if str(text).strip() in ['Lansia', 'Anak']:
                             return f"*{text}*"
                         return text
-                    df_display = df_clean.copy()
-                    df_display['Klaster'] = df_display['Klaster'].apply(format_italic)
+                    status_by_cluster = df_clean.groupby(['Klaster', 'Status']).size().reset_index(name='Jumlah')
+                    status_by_cluster['Klaster_Formatted'] = status_by_cluster['Klaster'].apply(lambda x: f"*{x}")
                     
-                    chart = alt.Chart(df_display).mark_bar().encode(
+                    chart = alt.Chart(status_by_cluster).mark_bar().encode(
                         x=alt.X('Klaster:N', title='Klaster', 
                         axis=alt.Axis(labelExpr="'*' + datum.value + '*'")),
                         y=alt.Y('Jumlah:Q', title='Jumlah'),
@@ -582,9 +579,7 @@ if uploaded_file is not None:
                                                                         'Kecamatan', 'Desa/Kelurahan', 'Status']].head(15).copy()
                 df_prioritas['Prioritas'] = range(1, len(df_prioritas) + 1)
                 
-                st.dataframe(df_prioritas,
-                             use_container_width=True,
-                             hide_index=True)
+                st.dataframe(df_prioritas, use_container_width=True, hide_index=True)
                 
                 st.markdown("""
                 <div class="info-box">
@@ -618,9 +613,7 @@ if uploaded_file is not None:
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.dataframe(wilayah_stats,
-                                 use_container_width=True,
-                                 hide_index=True)
+                    st.dataframe(wilayah_stats, use_container_width=True, hide_index=True)
                 
                 with col2:
                     # Top 5 kecamatan dengan persentase tertinggi belum dapat
