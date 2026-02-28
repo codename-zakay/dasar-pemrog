@@ -756,5 +756,5 @@ else:
     -5.925;107.025;01/01/2020;00:00:00;0.133
     ```
     
-    Semua visualisasi akan ditampilkan secara interaktif dan hasil analisis bisa di-download dalam format CSV.
+    Semua visualisasi akan ditampilkan secara interaktif.
     """)
