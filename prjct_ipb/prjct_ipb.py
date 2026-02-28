@@ -97,7 +97,7 @@ if st.session_state.data_loaded:
     st.sidebar.markdown("---")
     st.sidebar.title("📊 Navigasi Tugas")
     tugas = st.sidebar.radio(
-        "Pilih Nomor Tugas:",
+        "Pilih Jenis Analisa:",
         ["1. Data Suhu Salinitas", 
          "2. Ekstraksi Waktu & Rata-rata Bulanan",
          "3. Agregasi Harian",
@@ -206,7 +206,7 @@ if st.session_state.data_loaded:
         )
     
     elif "3. Agregasi Harian" in tugas:
-        st.header("📊 Soal 3: Agregasi Harian")
+        st.header("📊 Agregasi Harian")
         
         # Membuat salinan dataframe
         df = df_suhu.copy()
@@ -256,7 +256,7 @@ if st.session_state.data_loaded:
         )
     
     elif "4. Analisis 5 Hari" in tugas:
-        st.header("🏆 Soal 4: Analisis 5 Hari Tertinggi/Terendah")
+        st.header("📊 Analisis 5 Hari Tertinggi/Terendah")
         
         # Membuat salinan dataframe dan agregasi harian
         df = df_suhu.copy()
@@ -323,7 +323,7 @@ if st.session_state.data_loaded:
             st.metric("Selisih", f"{diff_temp:.2f} °C")
     
     elif "5. Analisis Pasut" in tugas:
-        st.header("🌊 Soal 5: Analisis Pasut - Lembah dan Bukit")
+        st.header("🌊 Analisis Pasut - Lembah dan Bukit")
         
         st.subheader("Data Pasut")
         st.write(f"**Nama file:** {uploaded_pasut.name}")
@@ -400,7 +400,7 @@ if st.session_state.data_loaded:
                 st.info("Tidak ada data lembah")
     
     elif "6. Statistik Pasut" in tugas:
-        st.header("📊 Soal 6: Statistik Pasut")
+        st.header("📊 Statistik Pasut")
         
         # Hitung statistik
         monthly_mean = df_pasut.groupby(df_pasut['datetime'].dt.to_period('M'))['elevasi (m)'].mean().reset_index()
@@ -447,7 +447,7 @@ if st.session_state.data_loaded:
             st.download_button("📥 Download Statistik Tahunan", csv_yearly, "statistik_tahunan.csv", "text/csv")
     
     elif "7. Kategorisasi Pasang" in tugas:
-        st.header("🏷️ Soal 7: Kategorisasi Pasang")
+        st.header("🏷️ Kategorisasi Pasang")
         
         # Hitung mean dan std
         mean_elev = df_pasut['elevasi (m)'].mean()
@@ -511,7 +511,7 @@ if st.session_state.data_loaded:
         )
     
     elif "8. Merge Data" in tugas:
-        st.header("🔄 Soal 8: Merge Data Suhu Salinitas dan Pasut")
+        st.header("🔄 Merge Data Suhu Salinitas dan Pasut")
         
         # Siapkan data suhu salinitas (resample harian)
         df_suhu_daily = df_suhu.copy()
@@ -569,7 +569,7 @@ if st.session_state.data_loaded:
         )
     
     elif "9. Rata-rata Harian" in tugas:
-        st.header("📈 Soal 9: Rata-rata Harian, Bulanan, dan Tahunan")
+        st.header("📈 Rata-rata Harian, Bulanan, dan Tahunan")
         
         # Siapkan data suhu salinitas
         df_suhu_daily = df_suhu.copy()
@@ -660,7 +660,7 @@ if st.session_state.data_loaded:
             st.download_button("📥 Download Tahunan", csv_yearly, "statistik_tahunan.csv", "text/csv")
     
     elif "10. Filter Data" in tugas:
-        st.header("🗑️ Soal 10: Filter Data")
+        st.header("🗑️ Filter Data")
         
         st.subheader("Data Sebelum Filter")
         st.write(f"**Jumlah data suhu salinitas:** {len(df_suhu)}")
