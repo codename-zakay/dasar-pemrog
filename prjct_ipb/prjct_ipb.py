@@ -737,24 +737,37 @@ else:
     ### 📋 Petunjuk Penggunaan:
     
     1. **Klik tombol "Browse files"** di sidebar untuk memilih file
-    2. Upload **file data suhu salinitas** (format CSV)
-    3. Upload **file data pasut** (format CSV dengan separator ;)
+    2. Upload **file Data Suhu Salinitas** (format CSV)
+    3. Upload **file Data Pasut** (format CSV dengan separator ;)
     4. Klik tombol **"Proses Upload Data"**
     5. Pilih nomor tugas yang ingin dianalisis
     
-    ### 📁 Format File yang Diharapkan:
+    ### 📁 Format File:
     
     **Data Suhu Salinitas:**
     ```
     time,depth,latitude,longitude,so,thetao
-    01/01/2024 00:00,0.494025,-6.0833335,105.250015,33.03554,29.614788
+    
+    Contoh: 
+    **01/01/2024 00:00,0.494025,-6.0833335,105.250015,33.03554,29.614788**
     ```
     
     **Data Pasut:**
     ```
     Latitude;Longitude;yyyy-mm-dd;hh:mm:ss;elevasi (m)
-    -5.925;107.025;01/01/2020;00:00:00;0.133
-    ```
     
-    Semua visualisasi akan ditampilkan secara interaktif dan hasil analisis bisa di-download dalam format CSV.
+    Contoh:
+    **-5.925;107.025;01/01/2020;00:00:00;0.133**
+    ```
     """)
+    
+    st.markdown("""
+        <div style="text-align: center; color: #888; font-size: 12px; padding: 20px;">
+            <p style="margin: 0;">
+                <strong>🏛️Universitas Institut Pertanian Bogor</strong> • Fakultas Perikanan, Ocean Fisheries Big Data
+            </p>
+            <p style="margin: 5px 0 0 0; font-size: 11px;">
+                Developed by <strong>Fauzi Dwi Edit Waskito</strong> • © Februari 2026
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
