@@ -27,21 +27,6 @@ if 'data_loaded' not in st.session_state:
 st.sidebar.title("📂 Upload Data")
 st.sidebar.markdown("Upload file CSV untuk analisis")
 
-with st.sidebar.expander("📌 Petunjuk Upload", expanded=True):
-    st.markdown("""
-    **Format file yang diharapkan:**
-    
-    **1. Data Suhu Salinitas**
-    - Nama file: *bebas*
-    - Kolom: time, depth, latitude, longitude, so, thetao
-    - Format time: `DD/MM/YYYY HH:MM`
-    
-    **2. Data Pasut**
-    - Nama file: *bebas*
-    - Kolom: Latitude, Longitude, yyyy-mm-dd, hh:mm:ss, elevasi (m)
-    - Separator: `;` (titik koma)
-    """)
-
 # Upload file suhu salinitas
 uploaded_suhu = st.sidebar.file_uploader(
     "Upload Data Suhu Salinitas (CSV)", 
