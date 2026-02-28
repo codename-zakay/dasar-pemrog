@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
 import io
 
@@ -17,47 +15,101 @@ st.set_page_config(
 st.title("🌊 Analisis Data Oseanografi - Tugas Minggu 4")
 st.markdown("---")
 
-# Fungsi untuk memuat data
-@st.cache_data
-def load_suhu_salinitas_data():
-    """Memuat data suhu salinitas dari file CSV"""
-    try:
-        # Membaca file CSV dengan separator koma
-        df = pd.read_csv('prjct_ipb/data suhu salinitas obd.csv')
-        
-        # Konversi kolom time ke datetime
-        df['time'] = pd.to_datetime(df['time'], format='%d/%m/%Y %H:%M')
-        
-        return df
-    except Exception as e:
-        st.error(f"Error loading suhu salinitas data: {e}")
-        return None
+# Inisialisasi session state untuk menyimpan data
+if 'df_suhu' not in st.session_state:
+    st.session_state.df_suhu = None
+if 'df_pasut' not in st.session_state:
+    st.session_state.df_pasut = None
+if 'data_loaded' not in st.session_state:
+    st.session_state.data_loaded = False
 
-@st.cache_data
-def load_pasut_data():
-    """Memuat data pasut dari file CSV"""
-    try:
-        # Membaca file CSV dengan separator ;
-        df = pd.read_csv('prjct_ipb/pasut.csv', sep=';')
-        
-        # Membuat kolom datetime dari yyyy-mm-dd dan hh:mm:ss
-        df['datetime'] = pd.to_datetime(df['yyyy-mm-dd'] + ' ' + df['hh:mm:ss'])
-        
-        # Hapus kolom yang tidak diperlukan
-        df = df.drop(['yyyy-mm-dd', 'hh:mm:ss'], axis=1)
-        
-        return df
-    except Exception as e:
-        st.error(f"Error loading pasut data: {e}")
-        return None
+# Sidebar untuk upload file
+st.sidebar.title("📂 Upload Data")
+st.sidebar.markdown("Upload file CSV untuk analisis")
 
-# Load data
-with st.spinner("Memuat data..."):
-    df_suhu = load_suhu_salinitas_data()
-    df_pasut = load_pasut_data()
+with st.sidebar.expander("📌 Petunjuk Upload", expanded=True):
+    st.markdown("""
+    **Format file yang diharapkan:**
+    
+    **1. Data Suhu Salinitas**
+    - Nama file: *bebas*
+    - Kolom: time, depth, latitude, longitude, so, thetao
+    - Format time: `DD/MM/YYYY HH:MM`
+    
+    **2. Data Pasut**
+    - Nama file: *bebas*
+    - Kolom: Latitude, Longitude, yyyy-mm-dd, hh:mm:ss, elevasi (m)
+    - Separator: `;` (titik koma)
+    """)
 
-if df_suhu is not None and df_pasut is not None:
+# Upload file suhu salinitas
+uploaded_suhu = st.sidebar.file_uploader(
+    "Upload Data Suhu Salinitas (CSV)", 
+    type=['csv'],
+    key="suhu_uploader"
+)
+
+# Upload file pasut
+uploaded_pasut = st.sidebar.file_uploader(
+    "Upload Data Pasut (CSV)", 
+    type=['csv'],
+    key="pasut_uploader"
+)
+
+# Tombol untuk memproses upload
+if st.sidebar.button("🔄 Proses Upload Data", type="primary"):
+    if uploaded_suhu is not None and uploaded_pasut is not None:
+        with st.spinner("Memproses data..."):
+            try:
+                # Baca data suhu salinitas
+                df_suhu = pd.read_csv(uploaded_suhu)
+                df_suhu['time'] = pd.to_datetime(df_suhu['time'], format='%d/%m/%Y %H:%M')
+                st.session_state.df_suhu = df_suhu
+                
+                # Baca data pasut
+                df_pasut = pd.read_csv(uploaded_pasut, sep=';')
+                # Konversi datetime dengan dayfirst=True
+                df_pasut['datetime'] = pd.to_datetime(
+                    df_pasut['yyyy-mm-dd'] + ' ' + df_pasut['hh:mm:ss'], 
+                    dayfirst=True
+                )
+                df_pasut = df_pasut.drop(['yyyy-mm-dd', 'hh:mm:ss'], axis=1)
+                st.session_state.df_pasut = df_pasut
+                
+                st.session_state.data_loaded = True
+                st.sidebar.success("✅ Data berhasil diupload!")
+                
+            except Exception as e:
+                st.sidebar.error(f"Error: {e}")
+                st.session_state.data_loaded = False
+    else:
+        st.sidebar.warning("⚠️ Harap upload kedua file terlebih dahulu")
+
+# Tampilkan info data jika sudah diupload
+if st.session_state.data_loaded:
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("📊 Info Data")
+    
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        st.metric("Data Suhu", f"{len(st.session_state.df_suhu):,} baris")
+    with col2:
+        st.metric("Data Pasut", f"{len(st.session_state.df_pasut):,} baris")
+    
+    # Tombol reset
+    if st.sidebar.button("🔄 Reset Data"):
+        st.session_state.df_suhu = None
+        st.session_state.df_pasut = None
+        st.session_state.data_loaded = False
+        st.rerun()
+
+# Main content - hanya tampil jika data sudah diupload
+if st.session_state.data_loaded:
+    df_suhu = st.session_state.df_suhu
+    df_pasut = st.session_state.df_pasut
+    
     # Sidebar untuk navigasi
+    st.sidebar.markdown("---")
     st.sidebar.title("📊 Navigasi Tugas")
     tugas = st.sidebar.radio(
         "Pilih Nomor Tugas:",
@@ -73,9 +125,6 @@ if df_suhu is not None and df_pasut is not None:
          "10. Filter Data"]
     )
     
-    st.sidebar.markdown("---")
-    st.sidebar.info("👨‍💻 Tugas Minggu 4 OBD\n\nData: Suhu Salinitas & Pasut")
-    
     # Tampilan berdasarkan pilihan
     if "1. Data Suhu Salinitas" in tugas:
         st.header("📈 Soal 1: Data Suhu Salinitas")
@@ -84,6 +133,7 @@ if df_suhu is not None and df_pasut is not None:
         
         with col1:
             st.subheader("Info Dataset")
+            st.write(f"**Nama file:** {uploaded_suhu.name}")
             st.write(f"**Jumlah baris:** {len(df_suhu)}")
             st.write(f"**Jumlah kolom:** {len(df_suhu.columns)}")
             st.write(f"**Rentang waktu:** {df_suhu['time'].min()} - {df_suhu['time'].max()}")
@@ -101,26 +151,26 @@ if df_suhu is not None and df_pasut is not None:
         st.subheader("Statistik Deskriptif")
         st.dataframe(df_suhu[['so', 'thetao']].describe().T, use_container_width=True)
         
-        # Visualisasi
+        # Visualisasi dengan line chart streamlit
         st.subheader("Visualisasi Data")
-        fig, axes = plt.subplots(1, 2, figsize=(15, 5))
         
-        # Plot suhu
-        axes[0].plot(df_suhu['time'], df_suhu['thetao'], 'r-', alpha=0.7, linewidth=0.5)
-        axes[0].set_title('Suhu (thetao)')
-        axes[0].set_xlabel('Waktu')
-        axes[0].set_ylabel('Suhu (°C)')
-        axes[0].grid(True, alpha=0.3)
+        # Sample data untuk performa (ambil 5000 sample)
+        sample_size = min(5000, len(df_suhu))
+        df_sample = df_suhu.sample(sample_size).sort_values('time')
         
-        # Plot salinitas
-        axes[1].plot(df_suhu['time'], df_suhu['so'], 'b-', alpha=0.7, linewidth=0.5)
-        axes[1].set_title('Salinitas (so)')
-        axes[1].set_xlabel('Waktu')
-        axes[1].set_ylabel('Salinitas (psu)')
-        axes[1].grid(True, alpha=0.3)
+        col1, col2 = st.columns(2)
         
-        plt.tight_layout()
-        st.pyplot(fig)
+        with col1:
+            st.write("**Suhu (thetao)**")
+            chart_data = df_sample[['time', 'thetao']].copy()
+            chart_data = chart_data.set_index('time')
+            st.line_chart(chart_data, height=300)
+        
+        with col2:
+            st.write("**Salinitas (so)**")
+            chart_data = df_sample[['time', 'so']].copy()
+            chart_data = chart_data.set_index('time')
+            st.line_chart(chart_data, height=300)
         
         # Tampilkan data
         with st.expander("Lihat Data"):
@@ -151,27 +201,24 @@ if df_suhu is not None and df_pasut is not None:
         
         with col1:
             st.write("**Salinitas (so)**")
-            fig1, ax1 = plt.subplots(figsize=(10, 4))
-            ax1.bar(monthly_mean['period'], monthly_mean['so'], color='skyblue')
-            ax1.set_xlabel('Bulan')
-            ax1.set_ylabel('Salinitas Rata-rata (psu)')
-            ax1.tick_params(axis='x', rotation=45)
-            ax1.grid(True, alpha=0.3, axis='y')
-            plt.tight_layout()
-            st.pyplot(fig1)
+            chart_data = monthly_mean.set_index('period')[['so']]
+            st.bar_chart(chart_data, height=300)
         
         with col2:
             st.write("**Suhu (thetao)**")
-            fig2, ax2 = plt.subplots(figsize=(10, 4))
-            ax2.bar(monthly_mean['period'], monthly_mean['thetao'], color='salmon')
-            ax2.set_xlabel('Bulan')
-            ax2.set_ylabel('Suhu Rata-rata (°C)')
-            ax2.tick_params(axis='x', rotation=45)
-            ax2.grid(True, alpha=0.3, axis='y')
-            plt.tight_layout()
-            st.pyplot(fig2)
+            chart_data = monthly_mean.set_index('period')[['thetao']]
+            st.bar_chart(chart_data, height=300)
         
         st.dataframe(monthly_mean[['period', 'so', 'thetao']], use_container_width=True)
+        
+        # Tombol download hasil
+        csv = monthly_mean.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Rata-rata Bulanan (CSV)",
+            data=csv,
+            file_name="rata_rata_bulanan.csv",
+            mime="text/csv"
+        )
     
     elif "3. Agregasi Harian" in tugas:
         st.header("📊 Soal 3: Agregasi Harian")
@@ -193,39 +240,35 @@ if df_suhu is not None and df_pasut is not None:
         st.subheader("DataFrame Hasil Agregasi Harian")
         st.dataframe(daily_agg, use_container_width=True)
         
-        # Visualisasi
+        # Visualisasi dengan line chart
         st.subheader("Visualisasi Agregasi Harian")
         
-        fig, axes = plt.subplots(3, 1, figsize=(15, 10))
+        tab1, tab2, tab3 = st.tabs(["Rata-rata Suhu", "Maksimum Salinitas", "Std Dev Suhu"])
         
-        # Rata-rata thetao
-        axes[0].plot(daily_agg.index, daily_agg['rata_rata_thetao'], 'g-', linewidth=1)
-        axes[0].set_title('Rata-rata Suhu Harian')
-        axes[0].set_ylabel('Suhu (°C)')
-        axes[0].grid(True, alpha=0.3)
-        axes[0].tick_params(axis='x', rotation=45)
+        with tab1:
+            chart_data = daily_agg[['rata_rata_thetao']].copy()
+            st.line_chart(chart_data, height=300)
         
-        # Maksimum so
-        axes[1].plot(daily_agg.index, daily_agg['maksimum_so'], 'b-', linewidth=1)
-        axes[1].set_title('Maksimum Salinitas Harian')
-        axes[1].set_ylabel('Salinitas (psu)')
-        axes[1].grid(True, alpha=0.3)
-        axes[1].tick_params(axis='x', rotation=45)
+        with tab2:
+            chart_data = daily_agg[['maksimum_so']].copy()
+            st.line_chart(chart_data, height=300)
         
-        # Standar deviasi thetao
-        axes[2].plot(daily_agg.index, daily_agg['standar_deviasi_thetao'], 'r-', linewidth=1)
-        axes[2].set_title('Standar Deviasi Suhu Harian')
-        axes[2].set_ylabel('Std Dev Suhu (°C)')
-        axes[2].set_xlabel('Tanggal')
-        axes[2].grid(True, alpha=0.3)
-        axes[2].tick_params(axis='x', rotation=45)
-        
-        plt.tight_layout()
-        st.pyplot(fig)
+        with tab3:
+            chart_data = daily_agg[['standar_deviasi_thetao']].copy()
+            st.line_chart(chart_data, height=300)
         
         # Statistik agregasi
         st.subheader("Statistik Agregasi Harian")
         st.dataframe(daily_agg.describe(), use_container_width=True)
+        
+        # Tombol download
+        csv = daily_agg.reset_index().to_csv(index=False)
+        st.download_button(
+            label="📥 Download Agregasi Harian (CSV)",
+            data=csv,
+            file_name="agregasi_harian.csv",
+            mime="text/csv"
+        )
     
     elif "4. Analisis 5 Hari" in tugas:
         st.header("🏆 Soal 4: Analisis 5 Hari Tertinggi/Terendah")
@@ -242,83 +285,63 @@ if df_suhu is not None and df_pasut is not None:
         daily_agg['date'] = pd.to_datetime(daily_agg['date'])
         daily_agg.set_index('date', inplace=True)
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("5 Hari dengan Suhu Rata-rata Tertinggi")
             top5_thetao = daily_agg.nlargest(5, 'rata_rata_thetao')[['rata_rata_thetao']]
-            st.dataframe(top5_thetao, use_container_width=True)
+            top5_thetao_display = top5_thetao.copy()
+            top5_thetao_display.index = top5_thetao_display.index.strftime('%d %b %Y')
+            st.dataframe(top5_thetao_display, use_container_width=True)
             
-            # Visualisasi
-            fig1, ax1 = plt.subplots(figsize=(8, 4))
-            bars = ax1.bar(range(5), top5_thetao['rata_rata_thetao'].values, color='orange')
-            ax1.set_xticks(range(5))
-            ax1.set_xticklabels([d.strftime('%d-%b') for d in top5_thetao.index])
-            ax1.set_ylabel('Suhu Rata-rata (°C)')
-            ax1.set_title('Top 5 Suhu Tertinggi')
-            ax1.grid(True, alpha=0.3, axis='y')
-            
-            # Tambahkan nilai di atas bar
-            for i, bar in enumerate(bars):
-                height = bar.get_height()
-                ax1.text(bar.get_x() + bar.get_width()/2., height,
-                        f'{height:.2f}', ha='center', va='bottom')
-            
-            st.pyplot(fig1)
+            # Bar chart
+            chart_data = pd.DataFrame({
+                'Tanggal': top5_thetao.index.strftime('%d-%b'),
+                'Suhu': top5_thetao['rata_rata_thetao'].values
+            }).set_index('Tanggal')
+            st.bar_chart(chart_data, height=250)
         
         with col2:
             st.subheader("5 Hari dengan Salinitas Maksimum Terendah")
             bottom5_so = daily_agg.nsmallest(5, 'maksimum_so')[['maksimum_so']]
-            st.dataframe(bottom5_so, use_container_width=True)
+            bottom5_so_display = bottom5_so.copy()
+            bottom5_so_display.index = bottom5_so_display.index.strftime('%d %b %Y')
+            st.dataframe(bottom5_so_display, use_container_width=True)
             
-            # Visualisasi
-            fig2, ax2 = plt.subplots(figsize=(8, 4))
-            bars = ax2.bar(range(5), bottom5_so['maksimum_so'].values, color='lightblue')
-            ax2.set_xticks(range(5))
-            ax2.set_xticklabels([d.strftime('%d-%b') for d in bottom5_so.index])
-            ax2.set_ylabel('Salinitas Maksimum (psu)')
-            ax2.set_title('Bottom 5 Salinitas Maksimum Terendah')
-            ax2.grid(True, alpha=0.3, axis='y')
-            
-            for i, bar in enumerate(bars):
-                height = bar.get_height()
-                ax2.text(bar.get_x() + bar.get_width()/2., height,
-                        f'{height:.2f}', ha='center', va='bottom')
-            
-            st.pyplot(fig2)
+            # Bar chart
+            chart_data = pd.DataFrame({
+                'Tanggal': bottom5_so.index.strftime('%d-%b'),
+                'Salinitas': bottom5_so['maksimum_so'].values
+            }).set_index('Tanggal')
+            st.bar_chart(chart_data, height=250)
+        
+        st.subheader("Selisih Suhu Rata-rata")
+        
+        # Hitung selisih suhu tertinggi dan terendah sepanjang tahun
+        max_temp = daily_agg['rata_rata_thetao'].max()
+        min_temp = daily_agg['rata_rata_thetao'].min()
+        diff_temp = max_temp - min_temp
+        
+        # Cari tanggalnya
+        date_max = daily_agg['rata_rata_thetao'].idxmax()
+        date_min = daily_agg['rata_rata_thetao'].idxmin()
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Suhu Tertinggi", f"{max_temp:.2f} °C", f"Tanggal: {date_max.strftime('%d %b %Y')}")
+        
+        with col2:
+            st.metric("Suhu Terendah", f"{min_temp:.2f} °C", f"Tanggal: {date_min.strftime('%d %b %Y')}")
         
         with col3:
-            st.subheader("Selisih Suhu Rata-rata")
-            
-            # Hitung selisih suhu tertinggi dan terendah sepanjang tahun
-            max_temp = daily_agg['rata_rata_thetao'].max()
-            min_temp = daily_agg['rata_rata_thetao'].min()
-            diff_temp = max_temp - min_temp
-            
-            # Cari tanggalnya
-            date_max = daily_agg['rata_rata_thetao'].idxmax()
-            date_min = daily_agg['rata_rata_thetao'].idxmin()
-            
-            st.metric("Suhu Tertinggi", f"{max_temp:.2f} °C", f"Tanggal: {date_max.strftime('%d %b %Y')}")
-            st.metric("Suhu Terendah", f"{min_temp:.2f} °C", f"Tanggal: {date_min.strftime('%d %b %Y')}")
-            st.metric("Selisih", f"{diff_temp:.2f} °C", delta_color="inverse")
-            
-            # Visualisasi distribusi suhu
-            fig3, ax3 = plt.subplots(figsize=(8, 4))
-            ax3.hist(daily_agg['rata_rata_thetao'], bins=20, color='green', alpha=0.7, edgecolor='black')
-            ax3.axvline(max_temp, color='red', linestyle='--', linewidth=2, label=f'Maks: {max_temp:.2f}')
-            ax3.axvline(min_temp, color='blue', linestyle='--', linewidth=2, label=f'Min: {min_temp:.2f}')
-            ax3.set_xlabel('Suhu Rata-rata Harian (°C)')
-            ax3.set_ylabel('Frekuensi')
-            ax3.set_title('Distribusi Suhu Rata-rata Harian')
-            ax3.legend()
-            ax3.grid(True, alpha=0.3)
-            st.pyplot(fig3)
+            st.metric("Selisih", f"{diff_temp:.2f} °C")
     
     elif "5. Analisis Pasut" in tugas:
         st.header("🌊 Soal 5: Analisis Pasut - Lembah dan Bukit")
         
         st.subheader("Data Pasut")
+        st.write(f"**Nama file:** {uploaded_pasut.name}")
         st.dataframe(df_pasut.head(10), use_container_width=True)
         
         # Fungsi untuk mendeteksi puncak dan lembah
@@ -352,41 +375,44 @@ if df_suhu is not None and df_pasut is not None:
         with col3:
             st.metric("Total", len(peaks) + len(valleys))
         
-        # Visualisasi
-        st.subheader("Visualisasi Pasut dengan Puncak dan Lembah")
+        # Visualisasi dengan line chart
+        st.subheader("Visualisasi Pasut (30 hari pertama)")
         
-        fig, ax = plt.subplots(figsize=(15, 6))
-        
-        # Plot seluruh data
-        ax.plot(df_pasut['datetime'], df_pasut['elevasi (m)'], 'b-', linewidth=0.5, alpha=0.7, label='Elevasi')
-        
-        # Tandai puncak
-        ax.scatter(peaks['datetime'], peaks['elevasi (m)'], color='red', s=30, marker='^', label='Puncak', zorder=5)
-        
-        # Tandai lembah
-        ax.scatter(valleys['datetime'], valleys['elevasi (m)'], color='green', s=30, marker='v', label='Lembah', zorder=5)
-        
-        ax.set_xlabel('Waktu')
-        ax.set_ylabel('Elevasi (m)')
-        ax.set_title('Data Pasut dengan Puncak dan Lembah')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        
-        # Batasi tampilan untuk kejelasan (misal 30 hari pertama)
+        # Batasi untuk 30 hari pertama agar lebih jelas
         end_date = df_pasut['datetime'].min() + pd.Timedelta(days=30)
-        ax.set_xlim(df_pasut['datetime'].min(), end_date)
+        df_sample = df_pasut[df_pasut['datetime'] <= end_date].copy()
         
-        plt.tight_layout()
-        st.pyplot(fig)
+        chart_data = df_sample.set_index('datetime')[['elevasi (m)']]
+        st.line_chart(chart_data, height=400)
         
-        with st.expander("Lihat Data Puncak dan Lembah"):
-            tab1, tab2 = st.tabs(["Data Puncak", "Data Lembah"])
-            
-            with tab1:
-                st.dataframe(peaks, use_container_width=True)
-            
-            with tab2:
-                st.dataframe(valleys, use_container_width=True)
+        # Tandai puncak dan lembah dalam tabel
+        st.subheader("Data Puncak dan Lembah")
+        
+        tab1, tab2 = st.tabs(["Data Puncak", "Data Lembah"])
+        
+        with tab1:
+            if len(peaks) > 0:
+                peaks_display = peaks[['datetime', 'elevasi (m)']].copy()
+                peaks_display['datetime'] = peaks_display['datetime'].dt.strftime('%Y-%m-%d %H:%M')
+                st.dataframe(peaks_display, use_container_width=True)
+                
+                # Download data puncak
+                csv_peaks = peaks.to_csv(index=False)
+                st.download_button("📥 Download Data Puncak", csv_peaks, "data_puncak.csv", "text/csv")
+            else:
+                st.info("Tidak ada data puncak")
+        
+        with tab2:
+            if len(valleys) > 0:
+                valleys_display = valleys[['datetime', 'elevasi (m)']].copy()
+                valleys_display['datetime'] = valleys_display['datetime'].dt.strftime('%Y-%m-%d %H:%M')
+                st.dataframe(valleys_display, use_container_width=True)
+                
+                # Download data lembah
+                csv_valleys = valleys.to_csv(index=False)
+                st.download_button("📥 Download Data Lembah", csv_valleys, "data_lembah.csv", "text/csv")
+            else:
+                st.info("Tidak ada data lembah")
     
     elif "6. Statistik Pasut" in tugas:
         st.header("📊 Soal 6: Statistik Pasut")
@@ -399,23 +425,16 @@ if df_suhu is not None and df_pasut is not None:
         min_yearly = df_pasut.groupby(df_pasut['datetime'].dt.year)['elevasi (m)'].min()
         range_yearly = max_yearly - min_yearly
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Rata-rata Bulanan")
-            st.dataframe(monthly_mean.rename(columns={'datetime': 'Bulan', 'elevasi (m)': 'Rata-rata Elevasi'}), 
-                        use_container_width=True)
+            monthly_display = monthly_mean.rename(columns={'datetime': 'Bulan', 'elevasi (m)': 'Rata-rata Elevasi'})
+            st.dataframe(monthly_display, use_container_width=True)
             
-            # Visualisasi rata-rata bulanan
-            fig1, ax1 = plt.subplots(figsize=(10, 4))
-            ax1.bar(monthly_mean['datetime'], monthly_mean['elevasi (m)'], color='skyblue')
-            ax1.set_xlabel('Bulan')
-            ax1.set_ylabel('Rata-rata Elevasi (m)')
-            ax1.set_title('Rata-rata Bulanan Elevasi Pasut')
-            ax1.tick_params(axis='x', rotation=45)
-            ax1.grid(True, alpha=0.3, axis='y')
-            plt.tight_layout()
-            st.pyplot(fig1)
+            # Bar chart
+            chart_data = monthly_mean.set_index('datetime')[['elevasi (m)']]
+            st.bar_chart(chart_data, height=250)
         
         with col2:
             st.subheader("Maksimum & Minimum Tahunan")
@@ -428,43 +447,19 @@ if df_suhu is not None and df_pasut is not None:
             })
             
             st.dataframe(stats_df, use_container_width=True)
-            
-            # Visualisasi
-            fig2, ax2 = plt.subplots(figsize=(10, 4))
-            x = range(len(stats_df))
-            width = 0.35
-            
-            ax2.bar([i - width/2 for i in x], stats_df['Maksimum'], width, label='Maksimum', color='red', alpha=0.7)
-            ax2.bar([i + width/2 for i in x], stats_df['Minimum'], width, label='Minimum', color='blue', alpha=0.7)
-            
-            ax2.set_xlabel('Tahun')
-            ax2.set_ylabel('Elevasi (m)')
-            ax2.set_title('Maksimum dan Minimum Tahunan')
-            ax2.set_xticks(x)
-            ax2.set_xticklabels(stats_df['Tahun'])
-            ax2.legend()
-            ax2.grid(True, alpha=0.3, axis='y')
-            
-            plt.tight_layout()
-            st.pyplot(fig2)
         
-        with col3:
-            st.subheader("Rentang Elevasi Tahunan")
-            
-            fig3, ax3 = plt.subplots(figsize=(10, 4))
-            bars = ax3.bar(stats_df['Tahun'].astype(str), stats_df['Rentang'], color='purple', alpha=0.7)
-            ax3.set_xlabel('Tahun')
-            ax3.set_ylabel('Rentang Elevasi (m)')
-            ax3.set_title('Rentang Elevasi (Max - Min) per Tahun')
-            ax3.grid(True, alpha=0.3, axis='y')
-            
-            for bar in bars:
-                height = bar.get_height()
-                ax3.text(bar.get_x() + bar.get_width()/2., height,
-                        f'{height:.3f}', ha='center', va='bottom', fontsize=8)
-            
-            plt.tight_layout()
-            st.pyplot(fig3)
+        st.subheader("Rentang Elevasi Tahunan")
+        rentang_data = stats_df.set_index('Tahun')[['Rentang']]
+        st.bar_chart(rentang_data, height=300)
+        
+        # Download semua statistik
+        col1, col2 = st.columns(2)
+        with col1:
+            csv_monthly = monthly_mean.to_csv(index=False)
+            st.download_button("📥 Download Statistik Bulanan", csv_monthly, "statistik_bulanan.csv", "text/csv")
+        with col2:
+            csv_yearly = stats_df.to_csv(index=False)
+            st.download_button("📥 Download Statistik Tahunan", csv_yearly, "statistik_tahunan.csv", "text/csv")
     
     elif "7. Kategorisasi Pasang" in tugas:
         st.header("🏷️ Soal 7: Kategorisasi Pasang")
@@ -498,37 +493,19 @@ if df_suhu is not None and df_pasut is not None:
         with col2:
             st.metric("Std Dev", f"{std_elev:.3f} m")
         with col3:
-            st.metric("Upper Bound (Mean + Std)", f"{upper_bound:.3f} m")
+            st.metric("Upper Bound", f"{upper_bound:.3f} m")
         with col4:
-            st.metric("Lower Bound (Mean - Std)", f"{lower_bound:.3f} m")
+            st.metric("Lower Bound", f"{lower_bound:.3f} m")
         
         st.subheader("Jumlah Masing-masing Kategori")
         
-        # Tampilkan hasil dalam bentuk bar
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-        
         # Bar chart
-        colors = {'Pasang Tinggi': 'red', 'Normal': 'green', 'Pasang Rendah': 'blue'}
-        bar_colors = [colors[cat] for cat in kategori_counts.index]
+        chart_data = pd.DataFrame({
+            'Kategori': kategori_counts.index,
+            'Jumlah': kategori_counts.values
+        }).set_index('Kategori')
         
-        bars = ax1.bar(kategori_counts.index, kategori_counts.values, color=bar_colors)
-        ax1.set_xlabel('Kategori')
-        ax1.set_ylabel('Jumlah')
-        ax1.set_title('Jumlah Data per Kategori Pasang')
-        ax1.grid(True, alpha=0.3, axis='y')
-        
-        for bar in bars:
-            height = bar.get_height()
-            ax1.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{int(height)}', ha='center', va='bottom')
-        
-        # Pie chart
-        ax2.pie(kategori_counts.values, labels=kategori_counts.index, autopct='%1.1f%%',
-                colors=[colors[cat] for cat in kategori_counts.index], startangle=90)
-        ax2.set_title('Proporsi Kategori Pasang')
-        
-        plt.tight_layout()
-        st.pyplot(fig)
+        st.bar_chart(chart_data, height=300)
         
         # Tabel hasil
         result_df = pd.DataFrame({
@@ -539,9 +516,14 @@ if df_suhu is not None and df_pasut is not None:
         
         st.dataframe(result_df, use_container_width=True)
         
-        # Tampilkan sample data
-        with st.expander("Lihat Sample Data dengan Kategori"):
-            st.dataframe(df_pasut_copy[['datetime', 'elevasi (m)', 'kategori']].head(20), use_container_width=True)
+        # Download data dengan kategori
+        csv_with_category = df_pasut_copy.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Data Pasut dengan Kategori",
+            data=csv_with_category,
+            file_name="data_pasut_dengan_kategori.csv",
+            mime="text/csv"
+        )
     
     elif "8. Merge Data" in tugas:
         st.header("🔄 Soal 8: Merge Data Suhu Salinitas dan Pasut")
@@ -586,20 +568,13 @@ if df_suhu is not None and df_pasut is not None:
         st.dataframe(merged_df[['so', 'thetao', 'elevasi_mean', 'elevasi_max', 'elevasi_min']].describe(), 
                     use_container_width=True)
         
-        # Visualisasi korelasi
+        # Korelasi
         st.subheader("Korelasi antar Parameter")
-        
         corr_cols = ['so', 'thetao', 'elevasi_mean', 'elevasi_max', 'elevasi_min']
         corr_matrix = merged_df[corr_cols].corr()
+        st.dataframe(corr_matrix.style.background_gradient(cmap='coolwarm'), use_container_width=True)
         
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, 
-                   square=True, linewidths=1, cbar_kws={"shrink": 0.8})
-        ax.set_title('Matriks Korelasi')
-        plt.tight_layout()
-        st.pyplot(fig)
-        
-        # Simpan data merge ke CSV (opsional)
+        # Download data merge
         csv = merged_df.to_csv(index=False)
         st.download_button(
             label="📥 Download Data Merge (CSV)",
@@ -611,7 +586,7 @@ if df_suhu is not None and df_pasut is not None:
     elif "9. Rata-rata Harian" in tugas:
         st.header("📈 Soal 9: Rata-rata Harian, Bulanan, dan Tahunan")
         
-        # Siapkan data suhu salinitas (resample)
+        # Siapkan data suhu salinitas
         df_suhu_daily = df_suhu.copy()
         df_suhu_daily['date'] = df_suhu_daily['time'].dt.date
         
@@ -649,64 +624,137 @@ if df_suhu is not None and df_pasut is not None:
             st.subheader("Statistik Harian")
             st.dataframe(daily_stats, use_container_width=True)
             
-            fig, axes = plt.subplots(2, 1, figsize=(15, 8))
-            
-            axes[0].plot(daily_stats['date'], daily_stats['so_mean'], 'b-', linewidth=1, label='Rata-rata')
-            axes[0].fill_between(daily_stats['date'], 
-                                 daily_stats['so_mean'] - daily_stats['so_std'],
-                                 daily_stats['so_mean'] + daily_stats['so_std'],
-                                 alpha=0.3, color='blue', label='±1 Std Dev')
-            axes[0].set_ylabel('Salinitas (psu)')
-            axes[0].set_title('Salinitas Harian')
-            axes[0].legend()
-            axes[0].grid(True, alpha=0.3)
-            
-            axes[1].plot(daily_stats['date'], daily_stats['thetao_mean'], 'r-', linewidth=1, label='Rata-rata')
-            axes[1].fill_between(daily_stats['date'], 
-                                 daily_stats['thetao_mean'] - daily_stats['thetao_std'],
-                                 daily_stats['thetao_mean'] + daily_stats['thetao_std'],
-                                 alpha=0.3, color='red', label='±1 Std Dev')
-            axes[1].set_xlabel('Tanggal')
-            axes[1].set_ylabel('Suhu (°C)')
-            axes[1].set_title('Suhu Harian')
-            axes[1].legend()
-            axes[1].grid(True, alpha=0.3)
-            
-            plt.tight_layout()
-            st.pyplot(fig)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Salinitas Harian**")
+                chart_data = daily_stats.set_index('date')[['so_mean', 'so_min', 'so_max']]
+                st.line_chart(chart_data, height=250)
+            with col2:
+                st.write("**Suhu Harian**")
+                chart_data = daily_stats.set_index('date')[['thetao_mean', 'thetao_min', 'thetao_max']]
+                st.line_chart(chart_data, height=250)
         
         with tab2:
             st.subheader("Statistik Bulanan")
             st.dataframe(monthly_stats, use_container_width=True)
             
-            fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-            
-            axes[0].bar(monthly_stats['year_month'], monthly_stats['so_mean'], color='skyblue', alpha=0.7, label='Mean')
-            axes[0].errorbar(monthly_stats['year_month'], monthly_stats['so_mean'], 
-                           yerr=monthly_stats['so_std'], fmt='none', color='black', capsize=5)
-            axes[0].set_ylabel('Salinitas (psu)')
-            axes[0].set_title('Salinitas Bulanan')
-            axes[0].tick_params(axis='x', rotation=45)
-            axes[0].grid(True, alpha=0.3, axis='y')
-            
-            axes[1].bar(monthly_stats['year_month'], monthly_stats['thetao_mean'], color='salmon', alpha=0.7, label='Mean')
-            axes[1].errorbar(monthly_stats['year_month'], monthly_stats['thetao_mean'], 
-                           yerr=monthly_stats['thetao_std'], fmt='none', color='black', capsize=5)
-            axes[1].set_ylabel('Suhu (°C)')
-            axes[1].set_title('Suhu Bulanan')
-            axes[1].tick_params(axis='x', rotation=45)
-            axes[1].grid(True, alpha=0.3, axis='y')
-            
-            plt.tight_layout()
-            st.pyplot(fig)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Salinitas Bulanan**")
+                chart_data = monthly_stats.set_index('year_month')[['so_mean']]
+                st.bar_chart(chart_data, height=250)
+            with col2:
+                st.write("**Suhu Bulanan**")
+                chart_data = monthly_stats.set_index('year_month')[['thetao_mean']]
+                st.bar_chart(chart_data, height=250)
         
         with tab3:
             st.subheader("Statistik Tahunan")
             st.dataframe(yearly_stats, use_container_width=True)
             
-            fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-            
-            x = yearly_stats['year'].astype(str)
-            width = 0.35
-            
-           
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Salinitas Tahunan**")
+                chart_data = yearly_stats.set_index('year')[['so_mean']]
+                st.bar_chart(chart_data, height=250)
+            with col2:
+                st.write("**Suhu Tahunan**")
+                chart_data = yearly_stats.set_index('year')[['thetao_mean']]
+                st.bar_chart(chart_data, height=250)
+        
+        # Download semua statistik
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            csv_daily = daily_stats.to_csv(index=False)
+            st.download_button("📥 Download Harian", csv_daily, "statistik_harian.csv", "text/csv")
+        with col2:
+            csv_monthly = monthly_stats.to_csv(index=False)
+            st.download_button("📥 Download Bulanan", csv_monthly, "statistik_bulanan.csv", "text/csv")
+        with col3:
+            csv_yearly = yearly_stats.to_csv(index=False)
+            st.download_button("📥 Download Tahunan", csv_yearly, "statistik_tahunan.csv", "text/csv")
+    
+    elif "10. Filter Data" in tugas:
+        st.header("🗑️ Soal 10: Filter Data")
+        
+        st.subheader("Data Sebelum Filter")
+        st.write(f"**Jumlah data suhu salinitas:** {len(df_suhu)}")
+        st.write(f"**Jumlah data pasut:** {len(df_pasut)}")
+        
+        # Filter data suhu salinitas
+        df_suhu_filtered = df_suhu.copy()
+        df_suhu_filtered['day'] = df_suhu_filtered['time'].dt.day
+        
+        # Hapus tanggal 5, 7, dan 21
+        df_suhu_filtered = df_suhu_filtered[~df_suhu_filtered['day'].isin([5, 7, 21])]
+        df_suhu_filtered = df_suhu_filtered.drop('day', axis=1)
+        
+        # Filter data pasut (hapus nilai negatif)
+        df_pasut_filtered = df_pasut[df_pasut['elevasi (m)'] >= 0].copy()
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Data Suhu Salinitas Setelah Filter")
+            st.write(f"**Jumlah data awal:** {len(df_suhu)}")
+            st.write(f"**Jumlah data setelah filter:** {len(df_suhu_filtered)}")
+            st.write(f"**Data terhapus:** {len(df_suhu) - len(df_suhu_filtered)}")
+            st.dataframe(df_suhu_filtered.head(10), use_container_width=True)
+        
+        with col2:
+            st.subheader("Data Pasut Setelah Filter")
+            st.write(f"**Jumlah data awal:** {len(df_pasut)}")
+            st.write(f"**Jumlah data setelah filter:** {len(df_pasut_filtered)}")
+            st.write(f"**Data terhapus:** {len(df_pasut) - len(df_pasut_filtered)}")
+            st.dataframe(df_pasut_filtered.head(10), use_container_width=True)
+        
+        # Download button untuk data yang sudah difilter
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            csv_suhu = df_suhu_filtered.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Data Suhu Salinitas Filtered",
+                data=csv_suhu,
+                file_name="data_suhu_salinitas_filtered.csv",
+                mime="text/csv"
+            )
+        
+        with col2:
+            csv_pasut = df_pasut_filtered.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Data Pasut Filtered",
+                data=csv_pasut,
+                file_name="data_pasut_filtered.csv",
+                mime="text/csv"
+            )
+
+else:
+    # Tampilan jika belum upload data
+    st.info("👋 Silakan upload file CSV terlebih dahulu di sidebar untuk memulai analisis.")
+    
+    st.markdown("""
+    ### 📋 Petunjuk Penggunaan:
+    
+    1. **Klik tombol "Browse files"** di sidebar untuk memilih file
+    2. Upload **file data suhu salinitas** (format CSV)
+    3. Upload **file data pasut** (format CSV dengan separator ;)
+    4. Klik tombol **"Proses Upload Data"**
+    5. Pilih nomor tugas yang ingin dianalisis
+    
+    ### 📁 Format File yang Diharapkan:
+    
+    **Data Suhu Salinitas:**
+    ```
+    time,depth,latitude,longitude,so,thetao
+    01/01/2024 00:00,0.494025,-6.0833335,105.250015,33.03554,29.614788
+    ```
+    
+    **Data Pasut:**
+    ```
+    Latitude;Longitude;yyyy-mm-dd;hh:mm:ss;elevasi (m)
+    -5.925;107.025;01/01/2020;00:00:00;0.133
+    ```
+    
+    Semua visualisasi akan ditampilkan secara interaktif dan hasil analisis bisa di-download dalam format CSV.
+    """)
