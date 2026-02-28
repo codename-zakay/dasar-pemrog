@@ -6,13 +6,13 @@ import io
 
 # Konfigurasi halaman
 st.set_page_config(
-    page_title="Analisis Data OBD - Tugas Minggu 4",
+    page_title="Analisis Big Data",
     page_icon="🌊",
     layout="wide"
 )
 
 # Judul aplikasi
-st.title("🌊 Analisis Data Oseanografi - Tugas Minggu 4")
+st.title("🌊 Ocean Fisheries Big Data")
 st.markdown("---")
 
 # Inisialisasi session state untuk menyimpan data
@@ -162,7 +162,7 @@ if st.session_state.data_loaded:
             st.dataframe(df_suhu.head(100), use_container_width=True)
     
     elif "2. Ekstraksi Waktu" in tugas:
-        st.header("📅 Soal 2: Ekstraksi Waktu & Rata-rata Bulanan")
+        st.header("📅 Ekstraksi Waktu & Rata-rata Bulanan")
         
         # Membuat salinan dataframe
         df = df_suhu.copy()
