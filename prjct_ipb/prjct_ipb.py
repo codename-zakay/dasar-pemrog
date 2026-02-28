@@ -42,7 +42,7 @@ uploaded_pasut = st.sidebar.file_uploader(
 )
 
 # Tombol untuk memproses upload
-if st.sidebar.button("🔄 Proses Upload Data", type="primary"):
+if st.sidebar.button("Proses Upload Data", type="primary"):
     if uploaded_suhu is not None and uploaded_pasut is not None:
         with st.spinner("Memproses data..."):
             try:
@@ -82,7 +82,7 @@ if st.session_state.data_loaded:
         st.metric("Data Pasut", f"{len(st.session_state.df_pasut):,} baris")
     
     # Tombol reset
-    if st.sidebar.button("🔄 Reset Data"):
+    if st.sidebar.button("Reset Data"):
         st.session_state.df_suhu = None
         st.session_state.df_pasut = None
         st.session_state.data_loaded = False
@@ -112,7 +112,7 @@ if st.session_state.data_loaded:
     
     # Tampilan berdasarkan pilihan
     if "1. Data Suhu Salinitas" in tugas:
-        st.header("📈 Soal 1: Data Suhu Salinitas")
+        st.header("📈 Data Suhu Salinitas")
         
         col1, col2 = st.columns(2)
         
